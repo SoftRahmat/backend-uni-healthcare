@@ -18,16 +18,30 @@ import {
 
 export const scheduleRouter = Router();
 
-scheduleRouter.get("/", optionalAuthenticate, validate({ query: scheduleListQuerySchema }), listSchedules);
+scheduleRouter.get(
+  "/",
+  optionalAuthenticate,
+  validate({ query: scheduleListQuerySchema }),
+  listSchedules,
+);
 scheduleRouter.post(
-  "/", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
-  validate({ body: createScheduleSchema }), createSchedules,
+  "/",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
+  validate({ body: createScheduleSchema }),
+  createSchedules,
 );
 scheduleRouter.patch(
-  "/:scheduleId", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
-  validate({ params: scheduleIdParamsSchema, body: updateScheduleSchema }), updateSchedule,
+  "/:scheduleId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
+  validate({ params: scheduleIdParamsSchema, body: updateScheduleSchema }),
+  updateSchedule,
 );
 scheduleRouter.delete(
-  "/:scheduleId", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
-  validate({ params: scheduleIdParamsSchema }), deleteSchedule,
+  "/:scheduleId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
+  validate({ params: scheduleIdParamsSchema }),
+  deleteSchedule,
 );

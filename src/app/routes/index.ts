@@ -9,6 +9,8 @@ import { patientRouter } from "../module/patient/patient.routes.js";
 import { scheduleRouter } from "../module/schedule/schedule.routes.js";
 import { appointmentRouter } from "../module/appointment/appointment.routes.js";
 import { paymentRouter } from "../module/payment/payment.routes.js";
+import { prescriptionRouter } from "../module/prescription/prescription.routes.js";
+import { reviewRouter } from "../module/review/review.routes.js";
 
 export const apiRouter = Router();
 
@@ -21,3 +23,5 @@ apiRouter.use("/patients", patientRouter);
 apiRouter.use("/schedules", scheduleRouter);
 apiRouter.use("/appointments", appointmentRouter);
 apiRouter.use("/payments", paymentRouter);
+apiRouter.use("/prescriptions", prescriptionRouter);
+apiRouter.use("/reviews", reviewRouter);

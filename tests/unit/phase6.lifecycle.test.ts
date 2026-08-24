@@ -5,7 +5,10 @@ import {
   isValidAppointmentTransition,
 } from "../../src/app/module/appointment/appointment.service.js";
 import { DeferredStripePaymentGateway } from "../../src/app/module/appointment/appointment-payment.service.js";
-import { appointmentWindow, zonedScheduleInstant } from "../../src/app/module/appointment/appointment-time.service.js";
+import {
+  appointmentWindow,
+  zonedScheduleInstant,
+} from "../../src/app/module/appointment/appointment-time.service.js";
 import { AppointmentVideoService } from "../../src/app/module/appointment/appointment-video.service.js";
 
 describe("Phase 6 appointment lifecycle policies", () => {
@@ -18,10 +21,25 @@ describe("Phase 6 appointment lifecycle policies", () => {
   });
 
   it("applies full, partial, and no-refund tiers", () => {
-    expect(calculateCancellation("PATIENT", 30, 500, "PAID")).toMatchObject({ refundType: "FULL", refundAmount: 500, nextPaymentStatus: "REFUNDED" });
-    expect(calculateCancellation("DOCTOR", 18, 500, "PAID")).toMatchObject({ refundType: "PARTIAL", refundAmount: 250, nextPaymentStatus: "PARTIAL_REFUND" });
-    expect(calculateCancellation("ADMIN", 6, 500, "PAID")).toMatchObject({ refundType: "NONE", refundAmount: 0, nextPaymentStatus: "PAID" });
-    expect(calculateCancellation("ADMIN", 30, 500, "PENDING")).toMatchObject({ refundAmount: 0, nextPaymentStatus: "FAILED" });
+    expect(calculateCancellation("PATIENT", 30, 500, "PAID")).toMatchObject({
+      refundType: "FULL",
+      refundAmount: 500,
+      nextPaymentStatus: "REFUNDED",
+    });
+    expect(calculateCancellation("DOCTOR", 18, 500, "PAID")).toMatchObject({
+      refundType: "PARTIAL",
+      refundAmount: 250,
+      nextPaymentStatus: "PARTIAL_REFUND",
+    });
+    expect(calculateCancellation("ADMIN", 6, 500, "PAID")).toMatchObject({
+      refundType: "NONE",
+      refundAmount: 0,
+      nextPaymentStatus: "PAID",
+    });
+    expect(calculateCancellation("ADMIN", 30, 500, "PENDING")).toMatchObject({
+      refundAmount: 0,
+      nextPaymentStatus: "FAILED",
+    });
   });
 
   it("enforces patient and doctor cancellation cutoffs", () => {
@@ -30,14 +48,26 @@ describe("Phase 6 appointment lifecycle policies", () => {
   });
 
   it("converts configured local schedule times into exact instants", () => {
-    expect(zonedScheduleInstant("2026-09-01", "09:00", "Asia/Singapore").toISOString()).toBe("2026-09-01T01:00:00.000Z");
-    const window = appointmentWindow({ scheduleDate: "2026-09-01", startTime: "09:00", endTime: "10:00" });
+    expect(zonedScheduleInstant("2026-09-01", "09:00", "Asia/Singapore").toISOString()).toBe(
+      "2026-09-01T01:00:00.000Z",
+    );
+    const window = appointmentWindow({
+      scheduleDate: "2026-09-01",
+      startTime: "09:00",
+      endTime: "10:00",
+    });
     expect(window.endsAt.getTime()).toBeGreaterThan(window.startsAt.getTime());
   });
 
   it("creates a 30-minute untamperable payment shell", () => {
     const now = new Date("2026-09-01T00:00:00.000Z");
-    const payment = new DeferredStripePaymentGateway().pending({ paymentId: "payment", appointmentId: "appointment", amount: 500, patientId: "patient", now });
+    const payment = new DeferredStripePaymentGateway().pending({
+      paymentId: "payment",
+      appointmentId: "appointment",
+      amount: 500,
+      patientId: "patient",
+      now,
+    });
     expect(payment.amount).toBe(500);
     expect(payment.status).toBe("PENDING");
     expect(payment.expiresAt.toISOString()).toBe("2026-09-01T00:30:00.000Z");
@@ -48,12 +78,22 @@ describe("Phase 6 appointment lifecycle policies", () => {
     const appointment = {
       id: "appointment-id",
       videoCallingId: "meeting-id",
-      schedule: { scheduleDate: new Date("2026-09-01T00:00:00.000Z"), startTime: "09:00", endTime: "10:00" },
+      schedule: {
+        scheduleDate: new Date("2026-09-01T00:00:00.000Z"),
+        startTime: "09:00",
+        endTime: "10:00",
+      },
     };
     const actor = { userId: "patient-user", role: "PATIENT" as const };
     const { startsAt, endsAt } = appointmentWindow(appointment.schedule);
-    await expect(video.accessLink(appointment, actor, new Date(startsAt.getTime() - 16 * 60 * 1000))).resolves.toBeNull();
-    await expect(video.accessLink(appointment, actor, new Date(startsAt.getTime() - 15 * 60 * 1000))).resolves.toMatch(/^http/);
-    await expect(video.accessLink(appointment, actor, new Date(endsAt.getTime() + 60 * 60 * 1000))).resolves.toBeNull();
+    await expect(
+      video.accessLink(appointment, actor, new Date(startsAt.getTime() - 16 * 60 * 1000)),
+    ).resolves.toBeNull();
+    await expect(
+      video.accessLink(appointment, actor, new Date(startsAt.getTime() - 15 * 60 * 1000)),
+    ).resolves.toMatch(/^http/);
+    await expect(
+      video.accessLink(appointment, actor, new Date(endsAt.getTime() + 60 * 60 * 1000)),
+    ).resolves.toBeNull();
   });
 });

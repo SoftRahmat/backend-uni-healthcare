@@ -30,7 +30,9 @@ describe("Phase 4 upload security", () => {
   });
 
   it("accepts a matching PDF signature", async () => {
-    await expect(scanner.assertSafe(file(Buffer.from("%PDF-1.7\ncontent")))).resolves.toBeUndefined();
+    await expect(
+      scanner.assertSafe(file(Buffer.from("%PDF-1.7\ncontent"))),
+    ).resolves.toBeUndefined();
   });
 
   it("rejects the EICAR test signature with HTTP 422", async () => {

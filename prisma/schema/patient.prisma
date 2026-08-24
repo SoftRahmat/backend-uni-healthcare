@@ -1,12 +1,13 @@
 model Patient {
   id String @id @default(uuid(7))
 
-  userId        String  @unique
-  name          String  @db.VarChar(100)
-  email         String  @unique @db.VarChar(320)
-  contactNumber String? @db.VarChar(30)
-  address       String? @db.Text
-  profilePhoto  String? @db.VarChar(2048)
+  userId                 String  @unique
+  name                   String  @db.VarChar(100)
+  email                  String  @unique @db.VarChar(320)
+  contactNumber          String? @db.VarChar(30)
+  address                String? @db.Text
+  profilePhoto           String? @db.VarChar(2048)
+  appointmentDiscountBps Int     @default(0)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -17,6 +18,8 @@ model Patient {
   healthData     PatientHealthData?
   medicalReports MedicalReport[]
   appointments   Appointment[]
+  prescriptions  Prescription[]
+  reviews        Review[]
 
   @@index([isDeleted], name: "idx_patient_isDeleted")
   @@map("patients")

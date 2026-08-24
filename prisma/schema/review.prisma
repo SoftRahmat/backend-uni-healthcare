@@ -1,0 +1,41 @@
+model Review {
+  id               String    @id @default(uuid(7))
+  appointmentId    String    @unique
+  patientId        String
+  doctorId         String
+  rating           Int
+  comment          String?   @db.VarChar(1000)
+  displayAnonymous Boolean   @default(true)
+  isVerified       Boolean   @default(true)
+  flaggedAt        DateTime?
+  flagReason       String?   @db.VarChar(500)
+  isDeleted        Boolean   @default(false)
+  deletedAt        DateTime?
+  deletedByUserId  String?   @db.VarChar(100)
+  deletionReason   String?   @db.VarChar(500)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  appointment Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  patient     Patient         @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  doctor      Doctor          @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  response    ReviewResponse?
+
+  @@index([doctorId, isDeleted, createdAt(sort: Desc)], name: "idx_review_doctor_public")
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_review_patient_created")
+  @@index([rating, isDeleted], name: "idx_review_rating")
+  @@index([flaggedAt], name: "idx_review_flaggedAt")
+  @@map("reviews")
+}
+
+model ReviewResponse {
+  id        String   @id @default(uuid(7))
+  reviewId  String   @unique
+  doctorId  String
+  response  String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Restrict)
+
+  @@index([doctorId, createdAt(sort: Desc)], name: "idx_review_response_doctor_created")
+  @@map("review_responses")
+}

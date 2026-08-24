@@ -20,13 +20,18 @@ const contextFrom = (request: Request): RequestContext => ({
 });
 
 const requireAuth = (request: Request) => {
-  if (!request.auth) throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
+  if (!request.auth)
+    throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
   return request.auth;
 };
 
 export const register = asyncHandler(async (request, response) => {
   const user = await authService.register(registerSchema.parse(request.body), contextFrom(request));
-  response.status(201).json(successResponse("Registration successful. Check your email to verify your account.", user));
+  response
+    .status(201)
+    .json(
+      successResponse("Registration successful. Check your email to verify your account.", user),
+    );
 });
 
 export const verifyEmail = asyncHandler(async (request, response) => {
@@ -38,7 +43,9 @@ export const verifyEmail = asyncHandler(async (request, response) => {
 export const resendVerification = asyncHandler(async (request, response) => {
   const { email } = emailSchema.parse(request.body);
   await authService.resendVerification(email, contextFrom(request));
-  response.status(200).json(successResponse("If the account is awaiting verification, an email will be sent.", null));
+  response
+    .status(200)
+    .json(successResponse("If the account is awaiting verification, an email will be sent.", null));
 });
 
 export const login = asyncHandler(async (request, response) => {
@@ -49,13 +56,19 @@ export const login = asyncHandler(async (request, response) => {
 export const forgotPassword = asyncHandler(async (request, response) => {
   const { email } = emailSchema.parse(request.body);
   await authService.requestPasswordReset(email, contextFrom(request));
-  response.status(200).json(successResponse("If an eligible account exists, a password reset email will be sent.", null));
+  response
+    .status(200)
+    .json(
+      successResponse("If an eligible account exists, a password reset email will be sent.", null),
+    );
 });
 
 export const resetPassword = asyncHandler(async (request, response) => {
   const input = resetPasswordSchema.parse(request.body);
   await authService.resetPassword(input.token, input.password, contextFrom(request));
-  response.status(200).json(successResponse("Password reset successfully. Sign in again on all devices.", null));
+  response
+    .status(200)
+    .json(successResponse("Password reset successfully. Sign in again on all devices.", null));
 });
 
 export const changePassword = asyncHandler(async (request, response) => {

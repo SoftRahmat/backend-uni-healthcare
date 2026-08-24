@@ -20,9 +20,10 @@ export interface PrivateObjectStorage {
   delete(objectKey: string): Promise<void>;
 }
 
-const explicitCredentials = env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY
-  ? { accessKeyId: env.S3_ACCESS_KEY_ID, secretAccessKey: env.S3_SECRET_ACCESS_KEY }
-  : undefined;
+const explicitCredentials =
+  env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY
+    ? { accessKeyId: env.S3_ACCESS_KEY_ID, secretAccessKey: env.S3_SECRET_ACCESS_KEY }
+    : undefined;
 
 const client = new S3Client({
   region: env.S3_REGION,
@@ -33,21 +34,27 @@ const client = new S3Client({
 
 export class S3PrivateObjectStorage implements PrivateObjectStorage {
   async upload(input: PrivateUpload) {
-    await client.send(new PutObjectCommand({
-      Bucket: env.S3_BUCKET,
-      Key: input.objectKey,
-      Body: input.body,
-      ContentType: input.contentType,
-      ServerSideEncryption: "AES256",
-    }));
+    await client.send(
+      new PutObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: input.objectKey,
+        Body: input.body,
+        ContentType: input.contentType,
+        ServerSideEncryption: "AES256",
+      }),
+    );
     return { objectKey: input.objectKey, fileUrl: `s3://${env.S3_BUCKET}/${input.objectKey}` };
   }
 
   async signedDownload(objectKey: string, expiresInSeconds = 60 * 60): Promise<string> {
-    return getSignedUrl(client, new GetObjectCommand({
-      Bucket: env.S3_BUCKET,
-      Key: objectKey,
-    }), { expiresIn: expiresInSeconds });
+    return getSignedUrl(
+      client,
+      new GetObjectCommand({
+        Bucket: env.S3_BUCKET,
+        Key: objectKey,
+      }),
+      { expiresIn: expiresInSeconds },
+    );
   }
 
   async delete(objectKey: string): Promise<void> {

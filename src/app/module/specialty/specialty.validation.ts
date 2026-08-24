@@ -1,17 +1,24 @@
 import { z } from "zod";
 
-const iconSchema = z.string().trim().max(500).refine((value) => {
-  if (z.url().safeParse(value).success) return true;
-  return /^\p{Extended_Pictographic}/u.test(value);
-}, "Icon must be a valid URL or emoji");
+const iconSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((value) => {
+    if (z.url().safeParse(value).success) return true;
+    return /^\p{Extended_Pictographic}/u.test(value);
+  }, "Icon must be a valid URL or emoji");
 
-export const createSpecialtySchema = z.object({
-  title: z.string().trim().min(2).max(100),
-  icon: iconSchema.optional(),
-  description: z.string().trim().max(1000).optional(),
-}).strict();
+export const createSpecialtySchema = z
+  .object({
+    title: z.string().trim().min(2).max(100),
+    icon: iconSchema.optional(),
+    description: z.string().trim().max(1000).optional(),
+  })
+  .strict();
 
-export const updateSpecialtySchema = createSpecialtySchema.partial()
+export const updateSpecialtySchema = createSpecialtySchema
+  .partial()
   .refine((value) => Object.keys(value).length > 0, "At least one update is required");
 
 export const specialtyIdParamsSchema = z.object({ specialtyId: z.uuid() });

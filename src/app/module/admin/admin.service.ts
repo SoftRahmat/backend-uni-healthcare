@@ -1,18 +1,11 @@
 import { prisma } from "../../lib/prisma.js";
 import type { Prisma } from "../../../generated/prisma/client.js";
 import type { ApplicationRole } from "../../shared/constants/roles.js";
-import type {
-  AdminListQuery,
-  CreateAdminInput,
-  UpdateAdminInput,
-} from "./admin.validation.js";
+import type { AdminListQuery, CreateAdminInput, UpdateAdminInput } from "./admin.validation.js";
 import { ApiError } from "../../errorHelpers/ApiError.js";
 import { hashPassword } from "../../utils/password.js";
 import { AdminEmailService } from "./admin-email.service.js";
-import {
-  cacheInvalidationService,
-  type CacheInvalidationService,
-} from "./admin-cache.service.js";
+import { cacheInvalidationService, type CacheInvalidationService } from "./admin-cache.service.js";
 import type { RequestContext } from "../../interfaces/index.js";
 
 export type AdminActor = {
@@ -136,7 +129,11 @@ export class AdminService {
       throw new ApiError(403, "Administrators can only update their own profile", "FORBIDDEN");
     }
     if (actor.role !== "SUPER_ADMIN" && (input.email || input.role || input.status)) {
-      throw new ApiError(403, "Only a super administrator can change email, role, or status", "FORBIDDEN");
+      throw new ApiError(
+        403,
+        "Only a super administrator can change email, role, or status",
+        "FORBIDDEN",
+      );
     }
 
     const email = input.email ? normalizeEmail(input.email) : undefined;
@@ -216,12 +213,14 @@ export class AdminService {
 
     const where: Prisma.AdminWhereInput = {
       ...(query.includeDeleted ? {} : { isDeleted: false }),
-      ...(query.searchTerm ? {
-        OR: [
-          { name: { contains: query.searchTerm, mode: "insensitive" as const } },
-          { email: { contains: query.searchTerm, mode: "insensitive" as const } },
-        ],
-      } : {}),
+      ...(query.searchTerm
+        ? {
+            OR: [
+              { name: { contains: query.searchTerm, mode: "insensitive" as const } },
+              { email: { contains: query.searchTerm, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
       user: {
         ...(query.status ? { status: query.status } : {}),
         ...(query.role ? { role: query.role } : { role: { in: ["ADMIN", "SUPER_ADMIN"] } }),

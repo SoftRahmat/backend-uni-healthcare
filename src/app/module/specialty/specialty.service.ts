@@ -28,7 +28,8 @@ export class SpecialtyService {
       where: { title: { equals: input.title, mode: "insensitive" } },
       select: { id: true },
     });
-    if (duplicate) throw new ApiError(409, "Specialty title already exists", "SPECIALTY_ALREADY_EXISTS");
+    if (duplicate)
+      throw new ApiError(409, "Specialty title already exists", "SPECIALTY_ALREADY_EXISTS");
 
     const specialty = await prisma.$transaction(async (transaction) => {
       const created = await transaction.specialty.create({ data: input });
@@ -65,11 +66,15 @@ export class SpecialtyService {
         },
         select: { id: true },
       });
-      if (duplicate) throw new ApiError(409, "Specialty title already exists", "SPECIALTY_ALREADY_EXISTS");
+      if (duplicate)
+        throw new ApiError(409, "Specialty title already exists", "SPECIALTY_ALREADY_EXISTS");
     }
 
     const specialty = await prisma.$transaction(async (transaction) => {
-      const updated = await transaction.specialty.update({ where: { id: specialtyId }, data: input });
+      const updated = await transaction.specialty.update({
+        where: { id: specialtyId },
+        data: input,
+      });
       await transaction.auditLog.create({
         data: {
           action: "SPECIALTY_UPDATED",
@@ -86,7 +91,8 @@ export class SpecialtyService {
 
   async list(query: SpecialtyListQuery) {
     const cacheKey = `specialties:list:${JSON.stringify(query)}`;
-    const cached = applicationCache.get<Awaited<ReturnType<SpecialtyService["listUncached"]>>>(cacheKey);
+    const cached =
+      applicationCache.get<Awaited<ReturnType<SpecialtyService["listUncached"]>>>(cacheKey);
     if (cached) return cached;
     const result = await this.listUncached(query);
     applicationCache.set(cacheKey, result, 60 * 60);
@@ -96,9 +102,11 @@ export class SpecialtyService {
   private async listUncached(query: SpecialtyListQuery) {
     const where = {
       isDeleted: false,
-      ...(query.searchTerm ? {
-        title: { contains: query.searchTerm, mode: "insensitive" as const },
-      } : {}),
+      ...(query.searchTerm
+        ? {
+            title: { contains: query.searchTerm, mode: "insensitive" as const },
+          }
+        : {}),
     };
     const [specialties, total] = await prisma.$transaction([
       prisma.specialty.findMany({
@@ -144,11 +152,19 @@ export class SpecialtyService {
     });
     if (!specialty) throw new ApiError(404, "Specialty was not found", "SPECIALTY_NOT_FOUND");
     if (specialty._count.doctors > 0) {
-      throw new ApiError(409, "Reassign active doctors before deleting this specialty", "SPECIALTY_IN_USE");
+      throw new ApiError(
+        409,
+        "Reassign active doctors before deleting this specialty",
+        "SPECIALTY_IN_USE",
+      );
     }
     const activeCount = await prisma.specialty.count({ where: { isDeleted: false } });
     if (activeCount <= 5) {
-      throw new ApiError(409, "At least five active specialties must remain", "MINIMUM_SPECIALTIES_REQUIRED");
+      throw new ApiError(
+        409,
+        "At least five active specialties must remain",
+        "MINIMUM_SPECIALTIES_REQUIRED",
+      );
     }
 
     const deleted = await prisma.$transaction(async (transaction) => {

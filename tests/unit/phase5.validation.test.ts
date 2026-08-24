@@ -42,40 +42,56 @@ describe("Phase 5 schedule contracts", () => {
   });
 
   it("rejects overlaps inside a bulk request while allowing adjacent slots", () => {
-    expect(createScheduleSchema.safeParse({ schedules: [
-      { scheduleDate: tomorrow, startTime: "09:00", endTime: "10:00" },
-      { scheduleDate: tomorrow, startTime: "09:30", endTime: "11:00" },
-    ] }).success).toBe(false);
-    expect(slotsOverlap(
-      { scheduleDate: tomorrow, startTime: "09:00", endTime: "10:00" },
-      { scheduleDate: tomorrow, startTime: "10:00", endTime: "11:00" },
-    )).toBe(false);
+    expect(
+      createScheduleSchema.safeParse({
+        schedules: [
+          { scheduleDate: tomorrow, startTime: "09:00", endTime: "10:00" },
+          { scheduleDate: tomorrow, startTime: "09:30", endTime: "11:00" },
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      slotsOverlap(
+        { scheduleDate: tomorrow, startTime: "09:00", endTime: "10:00" },
+        { scheduleDate: tomorrow, startTime: "10:00", endTime: "11:00" },
+      ),
+    ).toBe(false);
   });
 
   it("defaults public lookup to seven days and validates booked visibility input", () => {
-    const query = scheduleListQuerySchema.parse({ doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" });
+    const query = scheduleListQuerySchema.parse({
+      doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    });
     expect(query.startDate).toBe(today);
     expect(query.endDate).toBe(addIsoDays(today, 7));
     expect(query.showBooked).toBe(false);
-    expect(scheduleListQuerySchema.safeParse({
-      doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      showBooked: "invalid",
-    }).success).toBe(false);
-    expect(scheduleListQuerySchema.safeParse({
-      doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      startDate: tomorrow,
-      endDate: today,
-    }).success).toBe(false);
-    expect(scheduleListQuerySchema.safeParse({
-      doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-      date: today,
-      startDate: today,
-    }).success).toBe(false);
+    expect(
+      scheduleListQuerySchema.safeParse({
+        doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        showBooked: "invalid",
+      }).success,
+    ).toBe(false);
+    expect(
+      scheduleListQuerySchema.safeParse({
+        doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        startDate: tomorrow,
+        endDate: today,
+      }).success,
+    ).toBe(false);
+    expect(
+      scheduleListQuerySchema.safeParse({
+        doctorId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        date: today,
+        startDate: today,
+      }).success,
+    ).toBe(false);
   });
 
   it("supports partial updates and validates complete time pairs", () => {
     expect(updateScheduleSchema.safeParse({ startTime: "10:00" }).success).toBe(true);
-    expect(updateScheduleSchema.safeParse({ startTime: "10:00", endTime: "09:00" }).success).toBe(false);
+    expect(updateScheduleSchema.safeParse({ startTime: "10:00", endTime: "09:00" }).success).toBe(
+      false,
+    );
     expect(updateScheduleSchema.safeParse({}).success).toBe(false);
   });
 

@@ -1,0 +1,61 @@
+model Prescription {
+  id                 String    @id @default(uuid(7))
+  prescriptionNumber String    @unique @db.VarChar(100)
+  appointmentId      String    @unique
+  doctorId           String
+  patientId          String
+  instructions       String    @db.VarChar(5000)
+  followUpDate       DateTime? @db.Date
+  version            Int       @default(1)
+  reminderSentAt     DateTime?
+  retentionUntil     DateTime
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  appointment Appointment            @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  doctor      Doctor                 @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  patient     Patient                @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  medicines   PrescriptionMedicine[]
+  versions    PrescriptionVersion[]
+
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_prescription_patient_created")
+  @@index([doctorId, createdAt(sort: Desc)], name: "idx_prescription_doctor_created")
+  @@index([followUpDate], name: "idx_prescription_followUpDate")
+  @@map("prescriptions")
+}
+
+model PrescriptionMedicine {
+  id             String       @id @default(uuid(7))
+  prescriptionId String
+  name           String       @db.VarChar(200)
+  dosage         String       @db.VarChar(100)
+  frequency      String       @db.VarChar(100)
+  duration       String       @db.VarChar(100)
+  instructions   String?      @db.VarChar(500)
+  sortOrder      Int          @default(0)
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@index([prescriptionId, sortOrder], name: "idx_prescription_medicine_order")
+  @@map("prescription_medicines")
+}
+
+model PrescriptionVersion {
+  id              String       @id @default(uuid(7))
+  prescriptionId  String
+  version         Int
+  instructions    String       @db.VarChar(5000)
+  followUpDate    DateTime?    @db.Date
+  medicines       Json
+  changedByUserId String       @db.VarChar(100)
+  overrideReason  String?      @db.VarChar(500)
+  objectKey       String?      @unique @db.VarChar(1024)
+  fileUrl         String?      @db.VarChar(2048)
+  checksum        String?      @db.Char(64)
+  sizeBytes       Int?
+  createdAt       DateTime     @default(now())
+  prescription    Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Restrict)
+
+  @@unique([prescriptionId, version], name: "prescription_version_key")
+  @@index([prescriptionId, createdAt(sort: Desc)], name: "idx_prescription_version_created")
+  @@map("prescription_versions")
+}

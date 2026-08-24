@@ -1,22 +1,10 @@
 import { randomBytes } from "node:crypto";
 
 import { prisma } from "../../lib/prisma.js";
-import type {
-  ChangePasswordInput,
-  LoginInput,
-  RegisterInput,
-} from "./auth.validation.js";
+import type { ChangePasswordInput, LoginInput, RegisterInput } from "./auth.validation.js";
 import { ApiError } from "../../errorHelpers/ApiError.js";
-import {
-  createOpaqueToken,
-  hashOpaqueToken,
-  signAccessToken,
-} from "../../utils/auth-token.js";
-import {
-  hashPassword,
-  isPasswordReused,
-  verifyPassword,
-} from "../../utils/password.js";
+import { createOpaqueToken, hashOpaqueToken, signAccessToken } from "../../utils/auth-token.js";
+import { hashPassword, isPasswordReused, verifyPassword } from "../../utils/password.js";
 import { AuthEmailService } from "./auth-email.service.js";
 import type { RequestContext } from "../../interfaces/index.js";
 
@@ -119,7 +107,11 @@ export class AuthService {
       include: { user: true },
     });
     if (!token || token.type !== "EMAIL_VERIFICATION" || token.usedAt || token.expiresAt <= now) {
-      throw new ApiError(400, "Verification token is invalid or expired", "INVALID_VERIFICATION_TOKEN");
+      throw new ApiError(
+        400,
+        "Verification token is invalid or expired",
+        "INVALID_VERIFICATION_TOKEN",
+      );
     }
 
     const user = await prisma.$transaction(async (transaction) => {
@@ -128,7 +120,11 @@ export class AuthService {
         data: { usedAt: now },
       });
       if (claimed.count !== 1) {
-        throw new ApiError(400, "Verification token has already been used", "INVALID_VERIFICATION_TOKEN");
+        throw new ApiError(
+          400,
+          "Verification token has already been used",
+          "INVALID_VERIFICATION_TOKEN",
+        );
       }
 
       const updated = await transaction.user.update({
@@ -162,7 +158,11 @@ export class AuthService {
       orderBy: { createdAt: "desc" },
     });
     if (latest && latest.createdAt > new Date(Date.now() - 5 * 60 * 1_000)) {
-      throw new ApiError(429, "Verification email was sent recently", "VERIFICATION_RESEND_THROTTLED");
+      throw new ApiError(
+        429,
+        "Verification email was sent recently",
+        "VERIFICATION_RESEND_THROTTLED",
+      );
     }
 
     const rawToken = createOpaqueToken();
@@ -223,8 +223,9 @@ export class AuthService {
     }
 
     const account = user.accounts[0];
-    const validPassword = Boolean(account?.password) &&
-      await verifyPassword(input.password, account.password as string);
+    const validPassword =
+      Boolean(account?.password) &&
+      (await verifyPassword(input.password, account.password as string));
     if (!validPassword) {
       await this.recordFailedLogin(user.id, email, user.failedLoginAttempts, context);
       throw new ApiError(401, "Email or password is incorrect", "INVALID_CREDENTIALS");
@@ -242,9 +243,15 @@ export class AuthService {
       });
       const overflow = sessions.slice(0, Math.max(0, sessions.length - MAX_SESSIONS + 1));
       if (overflow.length) {
-        await transaction.session.deleteMany({ where: { id: { in: overflow.map(({ id }) => id) } } });
+        await transaction.session.deleteMany({
+          where: { id: { in: overflow.map(({ id }) => id) } },
+        });
         await transaction.auditLog.create({
-          data: { action: "SESSION_AUTO_REVOKED", userId: user.id, metadata: { count: overflow.length } },
+          data: {
+            action: "SESSION_AUTO_REVOKED",
+            userId: user.id,
+            metadata: { count: overflow.length },
+          },
         });
       }
 
@@ -369,8 +376,17 @@ export class AuthService {
     if (!token || token.type !== "PASSWORD_RESET" || token.usedAt || token.expiresAt <= now) {
       throw new ApiError(400, "Password reset token is invalid or expired", "INVALID_RESET_TOKEN");
     }
-    if (await isPasswordReused(password, token.user.passwordHistory.map(({ passwordHash }) => passwordHash))) {
-      throw new ApiError(400, "Password must not match your last three passwords", "PASSWORD_REUSED");
+    if (
+      await isPasswordReused(
+        password,
+        token.user.passwordHistory.map(({ passwordHash }) => passwordHash),
+      )
+    ) {
+      throw new ApiError(
+        400,
+        "Password must not match your last three passwords",
+        "PASSWORD_REUSED",
+      );
     }
 
     const passwordHash = await hashPassword(password);
@@ -379,7 +395,8 @@ export class AuthService {
         where: { id: token.id, usedAt: null, expiresAt: { gt: now } },
         data: { usedAt: now },
       });
-      if (claimed.count !== 1) throw new ApiError(400, "Reset token has already been used", "INVALID_RESET_TOKEN");
+      if (claimed.count !== 1)
+        throw new ApiError(400, "Reset token has already been used", "INVALID_RESET_TOKEN");
 
       await transaction.account.updateMany({
         where: { userId: token.userId, providerId: "credential", issuer: credentialIssuer },
@@ -387,8 +404,13 @@ export class AuthService {
       });
       await transaction.passwordHistory.create({ data: { userId: token.userId, passwordHash } });
       await transaction.session.deleteMany({ where: { userId: token.userId } });
-      await transaction.authToken.deleteMany({ where: { userId: token.userId, type: "PASSWORD_RESET" } });
-      await transaction.user.update({ where: { id: token.userId }, data: { needPasswordChange: false } });
+      await transaction.authToken.deleteMany({
+        where: { userId: token.userId, type: "PASSWORD_RESET" },
+      });
+      await transaction.user.update({
+        where: { id: token.userId },
+        data: { needPasswordChange: false },
+      });
       await transaction.auditLog.create({
         data: { action: "PASSWORD_RESET_COMPLETED", userId: token.userId, ...context },
       });
@@ -411,16 +433,28 @@ export class AuthService {
       },
     });
     const account = user.accounts[0];
-    if (!account?.password || !await verifyPassword(input.currentPassword, account.password)) {
+    if (!account?.password || !(await verifyPassword(input.currentPassword, account.password))) {
       throw new ApiError(400, "Current password is incorrect", "CURRENT_PASSWORD_INCORRECT");
     }
-    if (await isPasswordReused(input.newPassword, user.passwordHistory.map(({ passwordHash }) => passwordHash))) {
-      throw new ApiError(400, "Password must not match your last three passwords", "PASSWORD_REUSED");
+    if (
+      await isPasswordReused(
+        input.newPassword,
+        user.passwordHistory.map(({ passwordHash }) => passwordHash),
+      )
+    ) {
+      throw new ApiError(
+        400,
+        "Password must not match your last three passwords",
+        "PASSWORD_REUSED",
+      );
     }
 
     const passwordHash = await hashPassword(input.newPassword);
     await prisma.$transaction(async (transaction) => {
-      await transaction.account.update({ where: { id: account.id }, data: { password: passwordHash } });
+      await transaction.account.update({
+        where: { id: account.id },
+        data: { password: passwordHash },
+      });
       await transaction.passwordHistory.create({ data: { userId, passwordHash } });
       await transaction.user.update({ where: { id: userId }, data: { needPasswordChange: false } });
       if (input.revokeOtherSessions) {
@@ -489,7 +523,11 @@ export class AuthService {
     context: RequestContext,
   ): Promise<void> {
     if (sessionId === currentSessionId) {
-      throw new ApiError(400, "Use logout to terminate the current session", "CURRENT_SESSION_REVOKE_DENIED");
+      throw new ApiError(
+        400,
+        "Use logout to terminate the current session",
+        "CURRENT_SESSION_REVOKE_DENIED",
+      );
     }
     const result = await prisma.session.deleteMany({ where: { id: sessionId, userId } });
     if (!result.count) throw new ApiError(404, "Session was not found", "SESSION_NOT_FOUND");

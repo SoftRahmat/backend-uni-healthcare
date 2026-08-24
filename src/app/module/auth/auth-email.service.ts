@@ -10,7 +10,12 @@ export class AuthEmailService {
     await this.transport.send({
       to: email,
       subject: "Verify your PH-HealthCare email",
-      ...emailShell("Verify your email", "This link expires in 24 hours and can only be used once.", "Verify email", url),
+      ...emailShell(
+        "Verify your email",
+        "This link expires in 24 hours and can only be used once.",
+        "Verify email",
+        url,
+      ),
     });
   }
 
@@ -19,7 +24,12 @@ export class AuthEmailService {
     await this.transport.send({
       to: email,
       subject: "Reset your PH-HealthCare password",
-      ...emailShell("Reset your password", "This link expires in one hour and can only be used once.", "Reset password", url),
+      ...emailShell(
+        "Reset your password",
+        "This link expires in one hour and can only be used once.",
+        "Reset password",
+        url,
+      ),
     });
   }
 
@@ -30,5 +40,4 @@ export class AuthEmailService {
       ...emailShell("Password changed", "Your account password has been changed successfully."),
     });
   }
-
 }

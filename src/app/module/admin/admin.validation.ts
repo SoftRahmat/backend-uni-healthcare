@@ -2,28 +2,36 @@ import { z } from "zod";
 
 import { passwordSchema } from "../auth/auth.validation.js";
 
-const phoneSchema = z.string().trim().regex(/^\+?[1-9]\d{6,14}$/, "Contact number is invalid");
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+?[1-9]\d{6,14}$/, "Contact number is invalid");
 const profilePhotoSchema = z.url().max(2048);
 
-export const createAdminSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  email: z.email().max(320),
-  password: passwordSchema,
-  contactNumber: phoneSchema.optional(),
-  profilePhoto: profilePhotoSchema.optional(),
-}).strict();
+export const createAdminSchema = z
+  .object({
+    name: z.string().trim().min(2).max(100),
+    email: z.email().max(320),
+    password: passwordSchema,
+    contactNumber: phoneSchema.optional(),
+    profilePhoto: profilePhotoSchema.optional(),
+  })
+  .strict();
 
-export const updateAdminSchema = z.object({
-  name: z.string().trim().min(2).max(100).optional(),
-  email: z.email().max(320).optional(),
-  contactNumber: phoneSchema.nullable().optional(),
-  profilePhoto: profilePhotoSchema.nullable().optional(),
-  role: z.enum(["ADMIN", "SUPER_ADMIN"]).optional(),
-  status: z.enum(["ACTIVE", "BLOCKED"]).optional(),
-}).strict().refine((value) => Object.keys(value).length > 0, "At least one update is required");
+export const updateAdminSchema = z
+  .object({
+    name: z.string().trim().min(2).max(100).optional(),
+    email: z.email().max(320).optional(),
+    contactNumber: phoneSchema.nullable().optional(),
+    profilePhoto: profilePhotoSchema.nullable().optional(),
+    role: z.enum(["ADMIN", "SUPER_ADMIN"]).optional(),
+    status: z.enum(["ACTIVE", "BLOCKED"]).optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, "At least one update is required");
 
 const booleanQuery = z.preprocess(
-  (value) => value === "true" ? true : value === "false" ? false : value,
+  (value) => (value === "true" ? true : value === "false" ? false : value),
   z.boolean(),
 );
 

@@ -24,10 +24,12 @@ model Appointment {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  patient  Patient  @relation(fields: [patientId], references: [id], onDelete: Restrict)
-  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Restrict)
-  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
-  payment  Payment?
+  patient      Patient       @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  doctor       Doctor        @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  schedule     Schedule      @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+  payment      Payment?
+  prescription Prescription?
+  review       Review?
 
   @@index([patientId, status], name: "idx_appointment_patient_status")
   @@index([doctorId, status], name: "idx_appointment_doctor_status")

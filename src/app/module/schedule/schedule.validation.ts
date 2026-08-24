@@ -14,7 +14,8 @@ export const dateInTimeZone = (date: Date, timeZone = env.SCHEDULE_TIME_ZONE): s
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(date);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value;
   return `${part("year")}-${part("month")}-${part("day")}`;
 };
 
@@ -41,11 +42,13 @@ export const slotDurationMinutes = (slot: Pick<ScheduleSlot, "startTime" | "endT
   timeMinutes(slot.endTime) - timeMinutes(slot.startTime);
 
 export const slotsOverlap = (left: ScheduleSlot, right: ScheduleSlot): boolean =>
-  left.scheduleDate === right.scheduleDate
-  && left.startTime < right.endTime
-  && right.startTime < left.endTime;
+  left.scheduleDate === right.scheduleDate &&
+  left.startTime < right.endTime &&
+  right.startTime < left.endTime;
 
-const isoDateSchema = z.string().regex(DATE_PATTERN, "Date must use YYYY-MM-DD")
+const isoDateSchema = z
+  .string()
+  .regex(DATE_PATTERN, "Date must use YYYY-MM-DD")
   .refine(isRealIsoDate, "Date is invalid");
 const futureOrTodayDateSchema = isoDateSchema.refine(
   (value) => value >= todayInScheduleTimeZone(),
@@ -53,50 +56,72 @@ const futureOrTodayDateSchema = isoDateSchema.refine(
 );
 const timeSchema = z.string().regex(TIME_PATTERN, "Time must use 24-hour HH:mm format");
 
-const addTimingIssues = (slot: Pick<ScheduleSlot, "startTime" | "endTime">, context: z.RefinementCtx) => {
+const addTimingIssues = (
+  slot: Pick<ScheduleSlot, "startTime" | "endTime">,
+  context: z.RefinementCtx,
+) => {
   const duration = slotDurationMinutes(slot);
   if (duration <= 0) {
-    context.addIssue({ code: "custom", path: ["endTime"], message: "End time must be after start time" });
+    context.addIssue({
+      code: "custom",
+      path: ["endTime"],
+      message: "End time must be after start time",
+    });
   } else if (duration < 30 || duration > 12 * 60) {
-    context.addIssue({ code: "custom", path: ["endTime"], message: "Schedule duration must be between 30 minutes and 12 hours" });
+    context.addIssue({
+      code: "custom",
+      path: ["endTime"],
+      message: "Schedule duration must be between 30 minutes and 12 hours",
+    });
   }
 };
 
-export const scheduleSlotSchema = z.object({
-  scheduleDate: futureOrTodayDateSchema,
-  startTime: timeSchema,
-  endTime: timeSchema,
-}).strict().superRefine(addTimingIssues);
+export const scheduleSlotSchema = z
+  .object({
+    scheduleDate: futureOrTodayDateSchema,
+    startTime: timeSchema,
+    endTime: timeSchema,
+  })
+  .strict()
+  .superRefine(addTimingIssues);
 
 const doctorId = z.uuid().optional();
-const singleScheduleSchema = scheduleSlotSchema.safeExtend({ doctorId }).transform(({ doctorId: id, ...slot }) => ({
-  doctorId: id,
-  schedules: [slot],
-}));
-const bulkScheduleSchema = z.object({
-  doctorId,
-  schedules: z.array(scheduleSlotSchema).min(1).max(100),
-}).strict().superRefine((value, context) => {
-  for (let left = 0; left < value.schedules.length; left += 1) {
-    for (let right = left + 1; right < value.schedules.length; right += 1) {
-      if (slotsOverlap(value.schedules[left]!, value.schedules[right]!)) {
-        context.addIssue({
-          code: "custom",
-          path: ["schedules", right],
-          message: "Bulk schedules cannot overlap",
-        });
+const singleScheduleSchema = scheduleSlotSchema
+  .safeExtend({ doctorId })
+  .transform(({ doctorId: id, ...slot }) => ({
+    doctorId: id,
+    schedules: [slot],
+  }));
+const bulkScheduleSchema = z
+  .object({
+    doctorId,
+    schedules: z.array(scheduleSlotSchema).min(1).max(100),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    for (let left = 0; left < value.schedules.length; left += 1) {
+      for (let right = left + 1; right < value.schedules.length; right += 1) {
+        if (slotsOverlap(value.schedules[left]!, value.schedules[right]!)) {
+          context.addIssue({
+            code: "custom",
+            path: ["schedules", right],
+            message: "Bulk schedules cannot overlap",
+          });
+        }
       }
     }
-  }
-});
+  });
 
 export const createScheduleSchema = z.union([singleScheduleSchema, bulkScheduleSchema]);
 
-export const updateScheduleSchema = z.object({
-  scheduleDate: futureOrTodayDateSchema.optional(),
-  startTime: timeSchema.optional(),
-  endTime: timeSchema.optional(),
-}).strict().refine((value) => Object.keys(value).length > 0, "At least one update is required")
+export const updateScheduleSchema = z
+  .object({
+    scheduleDate: futureOrTodayDateSchema.optional(),
+    startTime: timeSchema.optional(),
+    endTime: timeSchema.optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, "At least one update is required")
   .superRefine((value, context) => {
     if (value.startTime && value.endTime) addTimingIssues(value as ScheduleSlot, context);
   });
@@ -107,22 +132,27 @@ const strictBooleanQuery = z.preprocess((value) => {
   return value;
 }, z.boolean());
 
-export const scheduleListQuerySchema = z.object({
-  doctorId: z.uuid(),
-  date: isoDateSchema.optional(),
-  startDate: isoDateSchema.optional(),
-  endDate: isoDateSchema.optional(),
-  showBooked: strictBooleanQuery.default(false),
-}).strict().refine((value) => !value.date || (!value.startDate && !value.endDate), {
-  message: "Use either a specific date or a date range",
-}).transform((value) => {
-  const today = todayInScheduleTimeZone();
-  const startDate = value.date ?? value.startDate ?? today;
-  const endDate = value.date ?? value.endDate ?? addIsoDays(startDate, 7);
-  return { doctorId: value.doctorId, startDate, endDate, showBooked: value.showBooked };
-}).refine((value) => value.startDate <= value.endDate, {
-  message: "Start date cannot be after end date",
-});
+export const scheduleListQuerySchema = z
+  .object({
+    doctorId: z.uuid(),
+    date: isoDateSchema.optional(),
+    startDate: isoDateSchema.optional(),
+    endDate: isoDateSchema.optional(),
+    showBooked: strictBooleanQuery.default(false),
+  })
+  .strict()
+  .refine((value) => !value.date || (!value.startDate && !value.endDate), {
+    message: "Use either a specific date or a date range",
+  })
+  .transform((value) => {
+    const today = todayInScheduleTimeZone();
+    const startDate = value.date ?? value.startDate ?? today;
+    const endDate = value.date ?? value.endDate ?? addIsoDays(startDate, 7);
+    return { doctorId: value.doctorId, startDate, endDate, showBooked: value.showBooked };
+  })
+  .refine((value) => value.startDate <= value.endDate, {
+    message: "Start date cannot be after end date",
+  });
 
 export const scheduleIdParamsSchema = z.object({ scheduleId: z.uuid() });
 

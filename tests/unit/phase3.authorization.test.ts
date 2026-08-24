@@ -9,21 +9,39 @@ describe("Phase 3 service authorization", () => {
       sendWelcome: async () => undefined,
       sendDeactivation: async () => undefined,
     });
-    await expect(service.create({} as never, {
-      userId: "patient-user",
-      role: "PATIENT",
-    }, {})).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    await expect(
+      service.create(
+        {} as never,
+        {
+          userId: "patient-user",
+          role: "PATIENT",
+        },
+        {},
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
   });
 
   it("blocks non-admin specialty mutation before persistence", async () => {
     const service = new SpecialtyService();
-    await expect(service.create({ title: "Cardiology" }, {
-      userId: "doctor-user",
-      role: "DOCTOR",
-    }, {})).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
-    await expect(service.delete("specialty-id", {
-      userId: "admin-user",
-      role: "ADMIN",
-    }, {})).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    await expect(
+      service.create(
+        { title: "Cardiology" },
+        {
+          userId: "doctor-user",
+          role: "DOCTOR",
+        },
+        {},
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
+    await expect(
+      service.delete(
+        "specialty-id",
+        {
+          userId: "admin-user",
+          role: "ADMIN",
+        },
+        {},
+      ),
+    ).rejects.toMatchObject({ statusCode: 403, code: "FORBIDDEN" });
   });
 });

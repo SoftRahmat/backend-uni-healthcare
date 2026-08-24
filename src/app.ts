@@ -39,12 +39,14 @@ export const createApp = (): Application => {
   app.use(requestLogger);
   app.use(helmet());
   app.use(createCorsMiddleware());
-  app.use(express.json({
-    limit: env.REQUEST_BODY_LIMIT,
-    verify(request, _response, buffer) {
-      (request as Request).rawBody = Buffer.from(buffer);
-    },
-  }));
+  app.use(
+    express.json({
+      limit: env.REQUEST_BODY_LIMIT,
+      verify(request, _response, buffer) {
+        (request as Request).rawBody = Buffer.from(buffer);
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: true, limit: env.REQUEST_BODY_LIMIT }));
 
   app.get("/", (_request, response) => {

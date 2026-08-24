@@ -1,32 +1,36 @@
 model Doctor {
   id String @id @default(uuid(7))
 
-  userId              String  @unique
-  name                String  @db.VarChar(100)
-  email               String  @unique @db.VarChar(320)
-  contactNumber       String  @db.VarChar(30)
-  address             String? @db.VarChar(500)
-  registrationNumber  String  @unique @db.VarChar(100)
-  experience          Int
-  gender              Gender
-  appointmentFee      Int
-  qualification       String  @db.VarChar(200)
-  currentWorkingPlace String  @db.VarChar(200)
-  designation         String  @db.VarChar(100)
-  bio                 String? @db.VarChar(1000)
-  profilePhoto        String? @db.VarChar(2048)
-  averageRating       Float   @default(0)
-  totalReviews        Int     @default(0)
+  userId               String  @unique
+  name                 String  @db.VarChar(100)
+  email                String  @unique @db.VarChar(320)
+  contactNumber        String  @db.VarChar(30)
+  address              String? @db.VarChar(500)
+  registrationNumber   String  @unique @db.VarChar(100)
+  experience           Int
+  gender               Gender
+  appointmentFee       Int
+  qualification        String  @db.VarChar(200)
+  currentWorkingPlace  String  @db.VarChar(200)
+  designation          String  @db.VarChar(100)
+  bio                  String? @db.VarChar(1000)
+  profilePhoto         String? @db.VarChar(2048)
+  averageRating        Float   @default(0)
+  totalReviews         Int     @default(0)
+  isProfileVisible     Boolean @default(true)
+  ratingReviewRequired Boolean @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specialties  DoctorSpecialty[]
-  schedules    DoctorSchedule[]
-  appointments Appointment[]
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties   DoctorSpecialty[]
+  schedules     DoctorSchedule[]
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  reviews       Review[]
 
   @@index([isDeleted], name: "idx_doctor_isDeleted")
   @@index([gender], name: "idx_doctor_gender")

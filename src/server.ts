@@ -7,21 +7,31 @@ import { prisma } from "./app/lib/prisma.js";
 import { cleanupExpiredAuthRecords } from "./app/module/auth/auth-cleanup.service.js";
 import { cleanupDeletedPatientReportFiles } from "./app/module/medicalReport/medicalReport-cleanup.service.js";
 import { processAppointmentLifecycle } from "./app/module/appointment/appointment-cleanup.service.js";
+import { processPrescriptionReminders } from "./app/module/prescription/prescription-reminder.service.js";
 
 const server = createServer(app);
 let isShuttingDown = false;
-const authCleanupInterval = setInterval(() => {
-  void Promise.all([cleanupExpiredAuthRecords(), cleanupDeletedPatientReportFiles()])
-    .catch((error: unknown) => {
+const authCleanupInterval = setInterval(
+  () => {
+    void Promise.all([
+      cleanupExpiredAuthRecords(),
+      cleanupDeletedPatientReportFiles(),
+      processPrescriptionReminders(),
+    ]).catch((error: unknown) => {
       logger.error("Scheduled cleanup failed", { error });
     });
-}, 24 * 60 * 60 * 1_000);
+  },
+  24 * 60 * 60 * 1_000,
+);
 authCleanupInterval.unref();
-const appointmentLifecycleInterval = setInterval(() => {
-  void processAppointmentLifecycle().catch((error: unknown) => {
-    logger.error("Appointment lifecycle cleanup failed", { error });
-  });
-}, 5 * 60 * 1_000);
+const appointmentLifecycleInterval = setInterval(
+  () => {
+    void processAppointmentLifecycle().catch((error: unknown) => {
+      logger.error("Appointment lifecycle cleanup failed", { error });
+    });
+  },
+  5 * 60 * 1_000,
+);
 appointmentLifecycleInterval.unref();
 
 const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
@@ -58,6 +68,7 @@ const bootstrap = async (): Promise<void> => {
   await cleanupExpiredAuthRecords();
   await cleanupDeletedPatientReportFiles();
   await processAppointmentLifecycle();
+  await processPrescriptionReminders();
   server.listen(env.PORT, env.HOST, () => {
     logger.info("Server started", {
       host: env.HOST,

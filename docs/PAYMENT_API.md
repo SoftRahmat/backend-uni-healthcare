@@ -19,17 +19,17 @@ Successful payments create an immutable invoice asynchronously. Failed or cancel
 
 ## Authenticated endpoints
 
-| Method and path | Access | Purpose |
-| --- | --- | --- |
-| `GET /payments/:paymentId` | Owning patient, assigned doctor, admin | Details, timeline, attempts, refunds; provider IDs are masked for non-admins |
-| `GET /payments/history/patient/:patientId` | Owner or admin | Paginated patient history with filters and totals |
-| `GET /payments/history/doctor/:doctorId` | Assigned doctor or admin | Paginated doctor payment history |
-| `GET /payments/history/patient/:patientId/export?format=csv\|pdf` | Owner or admin | Download history export |
-| `GET /payments/:paymentId/invoice` | Payment-authorized roles | Create/retrieve invoice and return a 24-hour signed private URL |
-| `POST /payments/:paymentId/refunds` | Admin | Full or partial Stripe refund for a cancelled appointment |
-| `GET /payments/admin/dashboard` | Admin | Revenue, daily/monthly trends, statuses, refund rate, recent 50 |
-| `GET /payments/admin/history` | Admin | Filtered system-wide payment history |
-| `POST /payments/:paymentId/admin-actions` | Admin | Retry, justified manual-paid override, or audited note |
+| Method and path                                                   | Access                                 | Purpose                                                                      |
+| ----------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| `GET /payments/:paymentId`                                        | Owning patient, assigned doctor, admin | Details, timeline, attempts, refunds; provider IDs are masked for non-admins |
+| `GET /payments/history/patient/:patientId`                        | Owner or admin                         | Paginated patient history with filters and totals                            |
+| `GET /payments/history/doctor/:doctorId`                          | Assigned doctor or admin               | Paginated doctor payment history                                             |
+| `GET /payments/history/patient/:patientId/export?format=csv\|pdf` | Owner or admin                         | Download history export                                                      |
+| `GET /payments/:paymentId/invoice`                                | Payment-authorized roles               | Create/retrieve invoice and return a 24-hour signed private URL              |
+| `POST /payments/:paymentId/refunds`                               | Admin                                  | Full or partial Stripe refund for a cancelled appointment                    |
+| `GET /payments/admin/dashboard`                                   | Admin                                  | Revenue, daily/monthly trends, statuses, refund rate, recent 50              |
+| `GET /payments/admin/history`                                     | Admin                                  | Filtered system-wide payment history                                         |
+| `POST /payments/:paymentId/admin-actions`                         | Admin                                  | Retry, justified manual-paid override, or audited note                       |
 
 History filters are `status`, `startDate`, `endDate`, `minAmount`, `maxAmount`, `page`, and `limit`. Retries are capped at three and create a fresh Checkout Session/idempotency key. Cancelled appointments cannot be retried. Refund totals cannot exceed the captured subtotal plus tax.
 

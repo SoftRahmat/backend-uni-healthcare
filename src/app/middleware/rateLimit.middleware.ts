@@ -4,9 +4,8 @@ import type { Request, Response } from "express";
 import { env } from "../config/env.js";
 import { errorResponse } from "../utils/ApiResponse.js";
 
-const handler = (message: string, code: string) =>
-  (request: Request, response: Response) =>
-    response.status(429).json(errorResponse(message, code, 429, request.requestId));
+const handler = (message: string, code: string) => (request: Request, response: Response) =>
+  response.status(429).json(errorResponse(message, code, 429, request.requestId));
 
 export const apiRateLimiter = rateLimit({
   windowMs: env.RATE_LIMIT_WINDOW_MS,

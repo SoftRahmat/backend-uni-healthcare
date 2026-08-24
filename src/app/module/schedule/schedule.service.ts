@@ -42,7 +42,9 @@ const scheduleView = (schedule: StoredSchedule, doctorId: string) => ({
   createdAt: schedule.createdAt,
   updatedAt: schedule.updatedAt,
 });
-const storedSlot = (schedule: Pick<StoredSchedule, "scheduleDate" | "startTime" | "endTime">): ScheduleSlot => ({
+const storedSlot = (
+  schedule: Pick<StoredSchedule, "scheduleDate" | "startTime" | "endTime">,
+): ScheduleSlot => ({
   scheduleDate: isoDate(schedule.scheduleDate),
   startTime: schedule.startTime,
   endTime: schedule.endTime,
@@ -59,9 +61,14 @@ const assertTiming = (slot: ScheduleSlot): void => {
     throw new ApiError(400, "Schedule date must be today or in the future", "PAST_SCHEDULE_DATE");
   }
   const duration = slotDurationMinutes(slot);
-  if (duration <= 0) throw new ApiError(400, "End time must be after start time", "INVALID_TIME_RANGE");
+  if (duration <= 0)
+    throw new ApiError(400, "End time must be after start time", "INVALID_TIME_RANGE");
   if (duration < 30 || duration > 12 * 60) {
-    throw new ApiError(400, "Schedule duration must be between 30 minutes and 12 hours", "INVALID_SCHEDULE_DURATION");
+    throw new ApiError(
+      400,
+      "Schedule duration must be between 30 minutes and 12 hours",
+      "INVALID_SCHEDULE_DURATION",
+    );
   }
 };
 
@@ -89,7 +96,10 @@ export class ScheduleService {
   private async requireActiveDoctor(doctorId: string) {
     const doctor = await prisma.doctor.findFirst({
       where: { id: doctorId, isDeleted: false, user: { status: "ACTIVE" } },
-      include: { user: true, specialties: { where: { specialty: { isDeleted: false } }, include: { specialty: true } } },
+      include: {
+        user: true,
+        specialties: { where: { specialty: { isDeleted: false } }, include: { specialty: true } },
+      },
     });
     if (!doctor) throw new ApiError(404, "Active doctor was not found", "DOCTOR_NOT_FOUND");
     return doctor;
@@ -111,7 +121,9 @@ export class ScheduleService {
     const doctor = await this.requireActiveDoctor(doctorId);
     const created = await prisma.$transaction(async (transaction) => {
       await lockDoctorSchedules(transaction, doctorId);
-      const dates = [...new Set(input.schedules.map(({ scheduleDate }) => scheduleDate))].map(databaseDate);
+      const dates = [...new Set(input.schedules.map(({ scheduleDate }) => scheduleDate))].map(
+        databaseDate,
+      );
       const existing = await transaction.schedule.findMany({
         where: {
           isDeleted: false,
@@ -119,10 +131,15 @@ export class ScheduleService {
           doctors: { some: { doctorId, isActive: true } },
         },
       });
-      const conflict = input.schedules.some((slot) => existing.some((schedule) =>
-        slotsOverlap(slot, storedSlot(schedule)),
-      ));
-      if (conflict) throw new ApiError(409, "Schedule overlaps an existing doctor schedule", "SCHEDULE_OVERLAP");
+      const conflict = input.schedules.some((slot) =>
+        existing.some((schedule) => slotsOverlap(slot, storedSlot(schedule))),
+      );
+      if (conflict)
+        throw new ApiError(
+          409,
+          "Schedule overlaps an existing doctor schedule",
+          "SCHEDULE_OVERLAP",
+        );
 
       const schedules = [];
       for (const slot of input.schedules) {
@@ -134,12 +151,14 @@ export class ScheduleService {
             doctors: { create: { doctorId } },
           },
         });
-        await transaction.auditLog.create({ data: {
-          action: "SCHEDULE_CREATED",
-          userId: doctor.userId,
-          ...context,
-          metadata: { actorUserId: actor.userId, doctorId, scheduleId: schedule.id, ...slot },
-        } });
+        await transaction.auditLog.create({
+          data: {
+            action: "SCHEDULE_CREATED",
+            userId: doctor.userId,
+            ...context,
+            metadata: { actorUserId: actor.userId, doctorId, scheduleId: schedule.id, ...slot },
+          },
+        });
         schedules.push(schedule);
       }
       return schedules;
@@ -152,7 +171,11 @@ export class ScheduleService {
   async list(query: ScheduleListQuery, actor?: ScheduleActor) {
     if (query.showBooked) {
       if (!actor || actor.role === "PATIENT") {
-        throw new ApiError(403, "Booked schedules are only visible to doctors and administrators", "FORBIDDEN");
+        throw new ApiError(
+          403,
+          "Booked schedules are only visible to doctors and administrators",
+          "FORBIDDEN",
+        );
       }
       if (actor.role === "DOCTOR" && actor.profileId !== query.doctorId) {
         throw new ApiError(403, "Doctors can only view their own booked schedules", "FORBIDDEN");
@@ -166,21 +189,30 @@ export class ScheduleService {
     const doctor = await this.requireActiveDoctor(query.doctorId);
     const today = todayInScheduleTimeZone();
     const effectiveStartDate = query.startDate < today ? today : query.startDate;
-    const schedules = effectiveStartDate > query.endDate ? [] : await prisma.schedule.findMany({
-      where: {
-        isDeleted: false,
-        scheduleDate: { gte: databaseDate(effectiveStartDate), lte: databaseDate(query.endDate) },
-        ...(!query.showBooked ? { isBooked: false } : {}),
-        doctors: { some: { doctorId: query.doctorId, isActive: true } },
-      },
-      orderBy: [{ scheduleDate: "asc" }, { startTime: "asc" }],
-    });
+    const schedules =
+      effectiveStartDate > query.endDate
+        ? []
+        : await prisma.schedule.findMany({
+            where: {
+              isDeleted: false,
+              scheduleDate: {
+                gte: databaseDate(effectiveStartDate),
+                lte: databaseDate(query.endDate),
+              },
+              ...(!query.showBooked ? { isBooked: false } : {}),
+              doctors: { some: { doctorId: query.doctorId, isActive: true } },
+            },
+            orderBy: [{ scheduleDate: "asc" }, { startTime: "asc" }],
+          });
     const result = {
       doctor: {
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialties[0]?.specialty.title ?? null,
-        specialties: doctor.specialties.map(({ specialty }) => ({ id: specialty.id, title: specialty.title })),
+        specialties: doctor.specialties.map(({ specialty }) => ({
+          id: specialty.id,
+          title: specialty.title,
+        })),
         appointmentFee: doctor.appointmentFee,
       },
       schedules: schedules.map((schedule) => scheduleView(schedule, query.doctorId)),
@@ -189,16 +221,23 @@ export class ScheduleService {
     return result;
   }
 
-  async update(scheduleId: string, input: UpdateScheduleInput, actor: ScheduleActor, context: RequestContext) {
+  async update(
+    scheduleId: string,
+    input: UpdateScheduleInput,
+    actor: ScheduleActor,
+    context: RequestContext,
+  ) {
     assertScheduleRole(actor);
     const existing = await prisma.schedule.findFirst({
       where: { id: scheduleId, isDeleted: false },
       include: { doctors: { where: { isActive: true }, include: { doctor: true } } },
     });
     const assignment = existing?.doctors[0];
-    if (!existing || !assignment) throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
+    if (!existing || !assignment)
+      throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
     assertManagePermission(assignment.doctorId, actor);
-    if (existing.isBooked) throw new ApiError(409, "Booked schedules cannot be updated", "SCHEDULE_ALREADY_BOOKED");
+    if (existing.isBooked)
+      throw new ApiError(409, "Booked schedules cannot be updated", "SCHEDULE_ALREADY_BOOKED");
     const slot: ScheduleSlot = {
       scheduleDate: input.scheduleDate ?? isoDate(existing.scheduleDate),
       startTime: input.startTime ?? existing.startTime,
@@ -209,8 +248,10 @@ export class ScheduleService {
     const updated = await prisma.$transaction(async (transaction) => {
       await lockDoctorSchedules(transaction, assignment.doctorId);
       const current = await transaction.schedule.findUnique({ where: { id: scheduleId } });
-      if (!current || current.isDeleted) throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
-      if (current.isBooked) throw new ApiError(409, "Booked schedules cannot be updated", "SCHEDULE_ALREADY_BOOKED");
+      if (!current || current.isDeleted)
+        throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
+      if (current.isBooked)
+        throw new ApiError(409, "Booked schedules cannot be updated", "SCHEDULE_ALREADY_BOOKED");
       const overlaps = await transaction.schedule.findMany({
         where: {
           id: { not: scheduleId },
@@ -220,7 +261,11 @@ export class ScheduleService {
         },
       });
       if (overlaps.some((schedule) => slotsOverlap(slot, storedSlot(schedule)))) {
-        throw new ApiError(409, "Schedule overlaps an existing doctor schedule", "SCHEDULE_OVERLAP");
+        throw new ApiError(
+          409,
+          "Schedule overlaps an existing doctor schedule",
+          "SCHEDULE_OVERLAP",
+        );
       }
       const schedule = await transaction.schedule.update({
         where: { id: scheduleId },
@@ -230,12 +275,19 @@ export class ScheduleService {
           endTime: slot.endTime,
         },
       });
-      await transaction.auditLog.create({ data: {
-        action: "SCHEDULE_UPDATED",
-        userId: assignment.doctor.userId,
-        ...context,
-        metadata: { actorUserId: actor.userId, doctorId: assignment.doctorId, scheduleId, fields: Object.keys(input) },
-      } });
+      await transaction.auditLog.create({
+        data: {
+          action: "SCHEDULE_UPDATED",
+          userId: assignment.doctor.userId,
+          ...context,
+          metadata: {
+            actorUserId: actor.userId,
+            doctorId: assignment.doctorId,
+            scheduleId,
+            fields: Object.keys(input),
+          },
+        },
+      });
       return schedule;
     });
     invalidateScheduleCaches(assignment.doctorId);
@@ -249,22 +301,36 @@ export class ScheduleService {
       include: { doctors: { where: { isActive: true }, include: { doctor: true } } },
     });
     const assignment = existing?.doctors[0];
-    if (!existing || !assignment) throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
+    if (!existing || !assignment)
+      throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
     assertManagePermission(assignment.doctorId, actor);
     if (existing.isBooked) {
-      throw new ApiError(409, "Cancel the appointment before deleting this schedule", "SCHEDULE_ALREADY_BOOKED");
+      throw new ApiError(
+        409,
+        "Cancel the appointment before deleting this schedule",
+        "SCHEDULE_ALREADY_BOOKED",
+      );
     }
     if (isoDate(existing.scheduleDate) < todayInScheduleTimeZone()) {
-      throw new ApiError(409, "Past schedules are archived and cannot be deleted", "PAST_SCHEDULE_ARCHIVED");
+      throw new ApiError(
+        409,
+        "Past schedules are archived and cannot be deleted",
+        "PAST_SCHEDULE_ARCHIVED",
+      );
     }
 
     const deletedAt = new Date();
     await prisma.$transaction(async (transaction) => {
       await lockDoctorSchedules(transaction, assignment.doctorId);
       const current = await transaction.schedule.findUnique({ where: { id: scheduleId } });
-      if (!current || current.isDeleted) throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
+      if (!current || current.isDeleted)
+        throw new ApiError(404, "Schedule was not found", "SCHEDULE_NOT_FOUND");
       if (current.isBooked) {
-        throw new ApiError(409, "Cancel the appointment before deleting this schedule", "SCHEDULE_ALREADY_BOOKED");
+        throw new ApiError(
+          409,
+          "Cancel the appointment before deleting this schedule",
+          "SCHEDULE_ALREADY_BOOKED",
+        );
       }
       await transaction.schedule.update({
         where: { id: scheduleId },
@@ -274,12 +340,14 @@ export class ScheduleService {
         where: { scheduleId },
         data: { isActive: false },
       });
-      await transaction.auditLog.create({ data: {
-        action: "SCHEDULE_DELETED",
-        userId: assignment.doctor.userId,
-        ...context,
-        metadata: { actorUserId: actor.userId, doctorId: assignment.doctorId, scheduleId },
-      } });
+      await transaction.auditLog.create({
+        data: {
+          action: "SCHEDULE_DELETED",
+          userId: assignment.doctor.userId,
+          ...context,
+          metadata: { actorUserId: actor.userId, doctorId: assignment.doctorId, scheduleId },
+        },
+      });
     });
     invalidateScheduleCaches(assignment.doctorId);
     return { id: scheduleId, isDeleted: true, deletedAt };

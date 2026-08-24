@@ -82,11 +82,17 @@ describe("AdminService privilege and sanitization rules", () => {
 
   it("enforces SUPER_ADMIN inside the service, not only at the route", async () => {
     const service = new AdminService(emails, cache);
-    await expect(service.create({
-      name: "New Admin",
-      email: "new@example.com",
-      password: "Strong!Password1",
-    }, { userId: "actor", role: "ADMIN" }, context)).rejects.toMatchObject({
+    await expect(
+      service.create(
+        {
+          name: "New Admin",
+          email: "new@example.com",
+          password: "Strong!Password1",
+        },
+        { userId: "actor", role: "ADMIN" },
+        context,
+      ),
+    ).rejects.toMatchObject({
       statusCode: 403,
       code: "FORBIDDEN",
     });
@@ -96,11 +102,15 @@ describe("AdminService privilege and sanitization rules", () => {
   it("creates and returns a sanitized admin view without credential or relation IDs", async () => {
     mocks.userFindFirst.mockResolvedValue(null);
     const service = new AdminService(emails, cache);
-    const result = await service.create({
-      name: "New Admin",
-      email: "NEW@example.com",
-      password: "Strong!Password1",
-    }, { userId: "super-user", role: "SUPER_ADMIN" }, context);
+    const result = await service.create(
+      {
+        name: "New Admin",
+        email: "NEW@example.com",
+        password: "Strong!Password1",
+      },
+      { userId: "super-user", role: "SUPER_ADMIN" },
+      context,
+    );
 
     expect(result).not.toHaveProperty("userId");
     expect(result).not.toHaveProperty("password");
@@ -113,32 +123,40 @@ describe("AdminService privilege and sanitization rules", () => {
     mocks.adminFindUnique.mockResolvedValue(admin);
     const service = new AdminService(emails, cache);
 
-    await expect(service.update(
-      admin.id,
-      { name: "Changed" },
-      { userId: "another-admin", role: "ADMIN" },
-      context,
-    )).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      service.update(
+        admin.id,
+        { name: "Changed" },
+        { userId: "another-admin", role: "ADMIN" },
+        context,
+      ),
+    ).rejects.toMatchObject({ statusCode: 403 });
 
-    await expect(service.update(
-      admin.id,
-      { role: "SUPER_ADMIN" },
-      { userId: user.id, role: "ADMIN" },
-      context,
-    )).rejects.toMatchObject({ statusCode: 403 });
+    await expect(
+      service.update(
+        admin.id,
+        { role: "SUPER_ADMIN" },
+        { userId: user.id, role: "ADMIN" },
+        context,
+      ),
+    ).rejects.toMatchObject({ statusCode: 403 });
   });
 
   it("paginates and sanitizes the administrator list", async () => {
     mocks.adminFindMany.mockResolvedValue([admin]);
     mocks.adminCount.mockResolvedValue(1);
     const service = new AdminService(emails, cache);
-    const result = await service.list({
-      page: 1,
-      limit: 10,
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      includeDeleted: false,
-    }, { userId: "super-user", role: "SUPER_ADMIN" }, context);
+    const result = await service.list(
+      {
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        includeDeleted: false,
+      },
+      { userId: "super-user", role: "SUPER_ADMIN" },
+      context,
+    );
 
     expect(result.meta).toEqual({ page: 1, limit: 10, total: 1, totalPages: 1 });
     expect(result.admins[0]).not.toHaveProperty("userId");

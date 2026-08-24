@@ -45,13 +45,10 @@ describe("authentication security primitives", () => {
     await expect(isPasswordReused("Strong!Password1", [hash])).resolves.toBe(true);
   });
 
-  it.each([
-    "short",
-    "alllowercase1!",
-    "ALLUPPERCASE1!",
-    "MissingNumber!",
-    "MissingSpecial1",
-  ])("rejects weak password %s", (password) => {
-    expect(passwordSchema.safeParse(password).success).toBe(false);
-  });
+  it.each(["short", "alllowercase1!", "ALLUPPERCASE1!", "MissingNumber!", "MissingSpecial1"])(
+    "rejects weak password %s",
+    (password) => {
+      expect(passwordSchema.safeParse(password).success).toBe(false);
+    },
+  );
 });

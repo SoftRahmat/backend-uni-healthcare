@@ -85,12 +85,12 @@ Changes the credential, rejects the last three passwords, revokes every session,
 
 ## Requirement coverage
 
-| Requirement | Implementation |
-| --- | --- |
-| FR-AUTH-001 | Transactional registration, normalized unique email, bcrypt, PATIENT/PENDING defaults, patient shell |
-| FR-AUTH-002 | Hashed 32-byte token, 24-hour expiry, atomic one-time claim, five-minute resend throttle, templates |
-| FR-AUTH-003 | Status checks, JWT claims, database session, IP/user agent, lockout/throttle, sanitized profile |
-| FR-AUTH-004 | Generic discovery response, one-hour hashed token, three/hour limit, history check, global revocation |
+| Requirement | Implementation                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| FR-AUTH-001 | Transactional registration, normalized unique email, bcrypt, PATIENT/PENDING defaults, patient shell   |
+| FR-AUTH-002 | Hashed 32-byte token, 24-hour expiry, atomic one-time claim, five-minute resend throttle, templates    |
+| FR-AUTH-003 | Status checks, JWT claims, database session, IP/user agent, lockout/throttle, sanitized profile        |
+| FR-AUTH-004 | Generic discovery response, one-hour hashed token, three/hour limit, history check, global revocation  |
 | FR-AUTH-005 | Current-password check, history, transactional update, optional other-session revocation, notification |
-| FR-AUTH-006 | Idempotent current/all-session logout with audit events |
-| FR-AUTH-007 | Session list/revoke, seven-day expiry, five-session cap, daily cleanup |
+| FR-AUTH-006 | Idempotent current/all-session logout with audit events                                                |
+| FR-AUTH-007 | Session list/revoke, seven-day expiry, five-session cap, daily cleanup                                 |

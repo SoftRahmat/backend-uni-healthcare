@@ -46,19 +46,24 @@ describe("doctor contracts", () => {
   });
 
   it("validates filter ranges and list limits", () => {
-    expect(doctorListQuerySchema.safeParse({ minExperience: "20", maxExperience: "10" }).success)
-      .toBe(false);
+    expect(
+      doctorListQuerySchema.safeParse({ minExperience: "20", maxExperience: "10" }).success,
+    ).toBe(false);
     expect(doctorListQuerySchema.safeParse({ limit: "51" }).success).toBe(false);
-    expect(doctorListQuerySchema.parse({ specialtyIds: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" }).specialtyIds)
-      .toHaveLength(1);
+    expect(
+      doctorListQuerySchema.parse({ specialtyIds: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" })
+        .specialtyIds,
+    ).toHaveLength(1);
   });
 });
 
 describe("specialty contracts", () => {
   it("accepts URL and emoji icons", () => {
     expect(createSpecialtySchema.safeParse({ title: "Cardiology", icon: "🫀" }).success).toBe(true);
-    expect(createSpecialtySchema.safeParse({ title: "Neurology", icon: "https://example.com/icon.png" }).success)
-      .toBe(true);
+    expect(
+      createSpecialtySchema.safeParse({ title: "Neurology", icon: "https://example.com/icon.png" })
+        .success,
+    ).toBe(true);
   });
 
   it("rejects invalid titles/icons and excessive pagination", () => {

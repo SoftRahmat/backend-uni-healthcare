@@ -142,6 +142,31 @@ export type StripeWebhookEvent = Prisma.StripeWebhookEventModel
  */
 export type Invoice = Prisma.InvoiceModel
 /**
+ * Model Prescription
+ * 
+ */
+export type Prescription = Prisma.PrescriptionModel
+/**
+ * Model PrescriptionMedicine
+ * 
+ */
+export type PrescriptionMedicine = Prisma.PrescriptionMedicineModel
+/**
+ * Model PrescriptionVersion
+ * 
+ */
+export type PrescriptionVersion = Prisma.PrescriptionVersionModel
+/**
+ * Model Review
+ * 
+ */
+export type Review = Prisma.ReviewModel
+/**
+ * Model ReviewResponse
+ * 
+ */
+export type ReviewResponse = Prisma.ReviewResponseModel
+/**
  * Model Schedule
  * 
  */

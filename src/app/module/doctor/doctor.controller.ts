@@ -13,14 +13,15 @@ import {
 } from "./doctor.validation.js";
 
 const actorFrom = (request: Request) => {
-  if (!request.auth) throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
+  if (!request.auth)
+    throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
   return {
     userId: request.auth.userId,
     role: request.auth.role,
     profileId: request.auth.profileId,
   };
 };
-const optionalActorFrom = (request: Request) => request.auth ? actorFrom(request) : undefined;
+const optionalActorFrom = (request: Request) => (request.auth ? actorFrom(request) : undefined);
 const contextFrom = (request: Request): RequestContext => ({
   ipAddress: request.ip,
   userAgent: request.header("user-agent"),
@@ -28,7 +29,9 @@ const contextFrom = (request: Request): RequestContext => ({
 
 export const createDoctor = asyncHandler(async (request, response) => {
   const doctor = await doctorService.create(
-    createDoctorSchema.parse(request.body), actorFrom(request), contextFrom(request),
+    createDoctorSchema.parse(request.body),
+    actorFrom(request),
+    contextFrom(request),
   );
   response.status(201).json(successResponse("Doctor created successfully", doctor));
 });
@@ -44,7 +47,8 @@ export const updateDoctor = asyncHandler(async (request, response) => {
 });
 
 export const updateOwnDoctorProfile = asyncHandler(async (request, response) => {
-  if (!request.auth?.profileId) throw new ApiError(404, "Doctor profile was not found", "DOCTOR_NOT_FOUND");
+  if (!request.auth?.profileId)
+    throw new ApiError(404, "Doctor profile was not found", "DOCTOR_NOT_FOUND");
   const doctor = await doctorService.update(
     request.auth.profileId,
     updateDoctorSchema.parse(request.body),
@@ -56,14 +60,18 @@ export const updateOwnDoctorProfile = asyncHandler(async (request, response) => 
 
 export const listDoctors = asyncHandler(async (request, response) => {
   const result = await doctorService.list(
-    doctorListQuerySchema.parse(request.query), optionalActorFrom(request),
+    doctorListQuerySchema.parse(request.query),
+    optionalActorFrom(request),
   );
-  response.status(200).json(successResponse("Doctors retrieved successfully", result.doctors, result.meta));
+  response
+    .status(200)
+    .json(successResponse("Doctors retrieved successfully", result.doctors, result.meta));
 });
 
 export const getDoctor = asyncHandler(async (request, response) => {
   const doctor = await doctorService.getById(
-    String(request.params.doctorId), optionalActorFrom(request),
+    String(request.params.doctorId),
+    optionalActorFrom(request),
   );
   response.status(200).json(successResponse("Doctor retrieved successfully", doctor));
 });

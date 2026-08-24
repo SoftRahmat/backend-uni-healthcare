@@ -24,7 +24,9 @@ export class DoctorEmailService {
       subject: "PH-HealthCare doctor account deactivated",
       ...emailShell(
         "Doctor account deactivated",
-        reason ? `Your account was deactivated. Reason: ${reason}` : "Your account was deactivated. Contact support for assistance.",
+        reason
+          ? `Your account was deactivated. Reason: ${reason}`
+          : "Your account was deactivated. Contact support for assistance.",
       ),
     });
   }

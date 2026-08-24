@@ -18,18 +18,27 @@ import {
 export const medicalReportRouter = Router({ mergeParams: true });
 
 medicalReportRouter.post(
-  "/", authorizeExact("PATIENT"), uploadMedicalReportFile,
-  validate({ params: medicalReportParamsSchema, body: uploadMedicalReportSchema }), uploadMedicalReport,
+  "/",
+  authorizeExact("PATIENT"),
+  uploadMedicalReportFile,
+  validate({ params: medicalReportParamsSchema, body: uploadMedicalReportSchema }),
+  uploadMedicalReport,
 );
 medicalReportRouter.get(
-  "/", authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR", "PATIENT"),
-  validate({ params: medicalReportParamsSchema, query: medicalReportListQuerySchema }), listMedicalReports,
+  "/",
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR", "PATIENT"),
+  validate({ params: medicalReportParamsSchema, query: medicalReportListQuerySchema }),
+  listMedicalReports,
 );
 medicalReportRouter.get(
-  "/:reportId/access", authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR", "PATIENT"),
-  validate({ params: medicalReportParamsSchema }), accessMedicalReport,
+  "/:reportId/access",
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR", "PATIENT"),
+  validate({ params: medicalReportParamsSchema }),
+  accessMedicalReport,
 );
 medicalReportRouter.delete(
-  "/:reportId", authorizeExact("SUPER_ADMIN", "ADMIN", "PATIENT"),
-  validate({ params: medicalReportParamsSchema }), deleteMedicalReport,
+  "/:reportId",
+  authorizeExact("SUPER_ADMIN", "ADMIN", "PATIENT"),
+  validate({ params: medicalReportParamsSchema }),
+  deleteMedicalReport,
 );

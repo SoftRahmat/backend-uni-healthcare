@@ -20,14 +20,23 @@ export const specialtyRouter = Router();
 
 specialtyRouter.get("/", validate({ query: specialtyListQuerySchema }), listSpecialties);
 specialtyRouter.post(
-  "/", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN"),
-  validate({ body: createSpecialtySchema }), createSpecialty,
+  "/",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN"),
+  validate({ body: createSpecialtySchema }),
+  createSpecialty,
 );
 specialtyRouter.patch(
-  "/:specialtyId", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN"),
-  validate({ params: specialtyIdParamsSchema, body: updateSpecialtySchema }), updateSpecialty,
+  "/:specialtyId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN"),
+  validate({ params: specialtyIdParamsSchema, body: updateSpecialtySchema }),
+  updateSpecialty,
 );
 specialtyRouter.delete(
-  "/:specialtyId", authenticate, authorizeExact("SUPER_ADMIN"),
-  validate({ params: specialtyIdParamsSchema }), deleteSpecialty,
+  "/:specialtyId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN"),
+  validate({ params: specialtyIdParamsSchema }),
+  deleteSpecialty,
 );

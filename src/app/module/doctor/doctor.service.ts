@@ -26,11 +26,9 @@ const invalidateDoctorCaches = (doctorId?: string): void => {
   applicationCache.deleteByPrefix(
     "doctors:list:",
     "specialties:list:",
-    ...(doctorId ? [
-      `doctor:${doctorId}`,
-      `schedules:doctor:${doctorId}:`,
-      `appointments:doctor:${doctorId}:`,
-    ] : []),
+    ...(doctorId
+      ? [`doctor:${doctorId}`, `schedules:doctor:${doctorId}:`, `appointments:doctor:${doctorId}:`]
+      : []),
   );
 };
 
@@ -51,6 +49,8 @@ const doctorView = (doctor: DoctorWithRelations) => ({
   profilePhoto: doctor.profilePhoto,
   averageRating: doctor.averageRating,
   totalReviews: doctor.totalReviews,
+  isProfileVisible: doctor.isProfileVisible,
+  ratingReviewRequired: doctor.ratingReviewRequired,
   status: doctor.user.status,
   specialties: doctor.specialties.map(({ specialty }) => ({
     id: specialty.id,
@@ -79,10 +79,14 @@ export class DoctorService {
   }
 
   async create(input: CreateDoctorInput, actor: DoctorActor, context: RequestContext) {
-    if (!isAdmin(actor.role)) throw new ApiError(403, "Administrator access is required", "FORBIDDEN");
+    if (!isAdmin(actor.role))
+      throw new ApiError(403, "Administrator access is required", "FORBIDDEN");
     const email = normalizeEmail(input.email);
     const [emailOwner, registrationOwner, specialtyIds, passwordHash] = await Promise.all([
-      prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } }),
+      prisma.user.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } },
+        select: { id: true },
+      }),
       prisma.doctor.findFirst({
         where: { registrationNumber: { equals: input.registrationNumber, mode: "insensitive" } },
         select: { id: true },
@@ -123,9 +127,11 @@ export class DoctorService {
           designation: input.designation,
           bio: input.bio,
           profilePhoto: input.profilePhoto,
-          specialties: specialtyIds.length ? {
-            create: specialtyIds.map((specialtyId) => ({ specialtyId })),
-          } : undefined,
+          specialties: specialtyIds.length
+            ? {
+                create: specialtyIds.map((specialtyId) => ({ specialtyId })),
+              }
+            : undefined,
         },
       });
       await transaction.account.create({
@@ -178,9 +184,10 @@ export class DoctorService {
       throw new ApiError(400, "Registration and rating fields are read-only", "READ_ONLY_FIELD");
     }
 
-    const specialtyIds = input.specialtyIds === undefined
-      ? undefined
-      : await this.validateSpecialties(input.specialtyIds);
+    const specialtyIds =
+      input.specialtyIds === undefined
+        ? undefined
+        : await this.validateSpecialties(input.specialtyIds);
     const email = input.email ? normalizeEmail(input.email) : undefined;
     if (email && email !== existing.email) {
       const owner = await prisma.user.findFirst({
@@ -202,7 +209,9 @@ export class DoctorService {
           ...(input.gender !== undefined ? { gender: input.gender } : {}),
           ...(input.appointmentFee !== undefined ? { appointmentFee: input.appointmentFee } : {}),
           ...(input.qualification !== undefined ? { qualification: input.qualification } : {}),
-          ...(input.currentWorkingPlace !== undefined ? { currentWorkingPlace: input.currentWorkingPlace } : {}),
+          ...(input.currentWorkingPlace !== undefined
+            ? { currentWorkingPlace: input.currentWorkingPlace }
+            : {}),
           ...(input.designation !== undefined ? { designation: input.designation } : {}),
           ...(input.bio !== undefined ? { bio: input.bio } : {}),
           ...(input.profilePhoto !== undefined ? { profilePhoto: input.profilePhoto } : {}),
@@ -250,28 +259,42 @@ export class DoctorService {
   async list(query: DoctorListQuery, actor?: DoctorActor) {
     const canSeeBlocked = Boolean(actor && isAdmin(actor.role));
     const cacheKey = `doctors:list:${canSeeBlocked}:${JSON.stringify(query)}`;
-    const cached = applicationCache.get<{ doctors: ReturnType<typeof doctorView>[]; meta: { page: number; limit: number; total: number; totalPages: number } }>(cacheKey);
+    const cached = applicationCache.get<{
+      doctors: ReturnType<typeof doctorView>[];
+      meta: { page: number; limit: number; total: number; totalPages: number };
+    }>(cacheKey);
     if (cached) return cached;
 
     const where: Prisma.DoctorWhereInput = {
       isDeleted: false,
-      ...(!canSeeBlocked ? { user: { status: "ACTIVE" } } : { user: { status: { in: ["ACTIVE", "BLOCKED"] } } }),
-      ...(query.searchTerm ? {
-        OR: [
-          { name: { contains: query.searchTerm, mode: "insensitive" } },
-          { qualification: { contains: query.searchTerm, mode: "insensitive" } },
-        ],
-      } : {}),
-      ...(query.specialtyIds?.length ? {
-        specialties: { some: { specialtyId: { in: query.specialtyIds } } },
-      } : {}),
+      ...(!canSeeBlocked ? { isProfileVisible: true } : {}),
+      ...(!canSeeBlocked
+        ? { user: { status: "ACTIVE" } }
+        : { user: { status: { in: ["ACTIVE", "BLOCKED"] } } }),
+      ...(query.searchTerm
+        ? {
+            OR: [
+              { name: { contains: query.searchTerm, mode: "insensitive" } },
+              { qualification: { contains: query.searchTerm, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(query.specialtyIds?.length
+        ? {
+            specialties: { some: { specialtyId: { in: query.specialtyIds } } },
+          }
+        : {}),
       ...(query.gender ? { gender: query.gender } : {}),
-      ...(query.minExperience !== undefined || query.maxExperience !== undefined ? {
-        experience: { gte: query.minExperience, lte: query.maxExperience },
-      } : {}),
-      ...(query.minFee !== undefined || query.maxFee !== undefined ? {
-        appointmentFee: { gte: query.minFee, lte: query.maxFee },
-      } : {}),
+      ...(query.minExperience !== undefined || query.maxExperience !== undefined
+        ? {
+            experience: { gte: query.minExperience, lte: query.maxExperience },
+          }
+        : {}),
+      ...(query.minFee !== undefined || query.maxFee !== undefined
+        ? {
+            appointmentFee: { gte: query.minFee, lte: query.maxFee },
+          }
+        : {}),
     };
     const [doctors, total] = await prisma.$transaction([
       prisma.doctor.findMany({
@@ -298,14 +321,16 @@ export class DoctorService {
 
   async getById(doctorId: string, actor?: DoctorActor) {
     const cacheKey = `doctor:${doctorId}:${actor?.role ?? "PUBLIC"}`;
-    const cached = applicationCache.get<ReturnType<typeof doctorView> & {
-      recentReviews: unknown[];
-      availability: {
-        hasAvailableSlots: boolean;
-        nextAvailableDate: string | null;
-        availableSlotsThisWeek: number;
-      };
-    }>(cacheKey);
+    const cached = applicationCache.get<
+      ReturnType<typeof doctorView> & {
+        recentReviews: unknown[];
+        availability: {
+          hasAvailableSlots: boolean;
+          nextAvailableDate: string | null;
+          availableSlotsThisWeek: number;
+        };
+      }
+    >(cacheKey);
     if (cached) return cached;
     const doctor = await prisma.doctor.findFirst({
       where: { id: doctorId, isDeleted: false },
@@ -314,6 +339,14 @@ export class DoctorService {
     if (!doctor) throw new ApiError(404, "Doctor was not found", "DOCTOR_NOT_FOUND");
     if (doctor.user.status === "BLOCKED" && !(actor && isAdmin(actor.role))) {
       throw new ApiError(403, "Doctor is not currently available", "DOCTOR_BLOCKED");
+    }
+    const ownsProfile = actor?.role === "DOCTOR" && actor.profileId === doctorId;
+    if (!doctor.isProfileVisible && !(actor && (isAdmin(actor.role) || ownsProfile))) {
+      throw new ApiError(
+        403,
+        "Doctor profile is pending rating review",
+        "DOCTOR_PROFILE_UNDER_REVIEW",
+      );
     }
     const today = todayInScheduleTimeZone();
     const endDate = addIsoDays(today, 7);
@@ -326,17 +359,40 @@ export class DoctorService {
       },
       doctors: { some: { doctorId, isActive: true } },
     };
-    const [nextAvailable, availableSlotsThisWeek] = await prisma.$transaction([
+    const [nextAvailable, availableSlotsThisWeek, recentReviews] = await prisma.$transaction([
       prisma.schedule.findFirst({
         where: availabilityWhere,
         orderBy: [{ scheduleDate: "asc" }, { startTime: "asc" }],
         select: { scheduleDate: true },
       }),
       prisma.schedule.count({ where: availabilityWhere }),
+      prisma.review.findMany({
+        where: { doctorId, isDeleted: false, flaggedAt: null, isVerified: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          displayAnonymous: true,
+          createdAt: true,
+          patient: { select: { name: true } },
+          response: { select: { response: true, createdAt: true } },
+        },
+      }),
     ]);
     const result = {
       ...doctorView(doctor),
-      recentReviews: [],
+      recentReviews: recentReviews.map((review) => ({
+        id: review.id,
+        rating: review.rating,
+        comment: review.comment,
+        patientName: review.displayAnonymous
+          ? `${review.patient.name.split(/\s+/)[0]} ${review.patient.name.split(/\s+/).at(-1)?.[0] ?? ""}.`
+          : review.patient.name,
+        createdAt: review.createdAt,
+        response: review.response,
+      })),
       availability: {
         hasAvailableSlots: availableSlotsThisWeek > 0,
         nextAvailableDate: nextAvailable?.scheduleDate.toISOString().slice(0, 10) ?? null,
@@ -353,7 +409,8 @@ export class DoctorService {
     actor: DoctorActor,
     context: RequestContext,
   ) {
-    if (!isAdmin(actor.role)) throw new ApiError(403, "Administrator access is required", "FORBIDDEN");
+    if (!isAdmin(actor.role))
+      throw new ApiError(403, "Administrator access is required", "FORBIDDEN");
     if (input.force && actor.role !== "SUPER_ADMIN") {
       throw new ApiError(403, "Only a super administrator can force deletion", "FORBIDDEN");
     }
@@ -382,7 +439,12 @@ export class DoctorService {
           action: "DOCTOR_DELETED",
           userId: existing.userId,
           ...context,
-          metadata: { actorUserId: actor.userId, doctorId, reason: input.reason, force: input.force },
+          metadata: {
+            actorUserId: actor.userId,
+            doctorId,
+            reason: input.reason,
+            force: input.force,
+          },
         },
       });
       return doctor;

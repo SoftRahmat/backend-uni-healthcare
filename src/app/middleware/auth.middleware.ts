@@ -53,10 +53,12 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
       ...claims,
       profileId: session.user.admin?.id ?? session.user.doctor?.id ?? session.user.patient?.id,
     };
-    void prisma.session.update({
-      where: { id: session.id },
-      data: { lastActivityAt: new Date() },
-    }).catch(() => undefined);
+    void prisma.session
+      .update({
+        where: { id: session.id },
+        data: { lastActivityAt: new Date() },
+      })
+      .catch(() => undefined);
     next();
   } catch (error) {
     next(error);

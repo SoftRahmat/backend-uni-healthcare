@@ -12,7 +12,8 @@ import {
 } from "./specialty.validation.js";
 
 const actorFrom = (request: Request) => {
-  if (!request.auth) throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
+  if (!request.auth)
+    throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
   return { userId: request.auth.userId, role: request.auth.role };
 };
 const contextFrom = (request: Request): RequestContext => ({
@@ -22,7 +23,9 @@ const contextFrom = (request: Request): RequestContext => ({
 
 export const createSpecialty = asyncHandler(async (request, response) => {
   const specialty = await specialtyService.create(
-    createSpecialtySchema.parse(request.body), actorFrom(request), contextFrom(request),
+    createSpecialtySchema.parse(request.body),
+    actorFrom(request),
+    contextFrom(request),
   );
   response.status(201).json(successResponse("Specialty created successfully", specialty));
 });
@@ -39,18 +42,22 @@ export const updateSpecialty = asyncHandler(async (request, response) => {
 
 export const listSpecialties = asyncHandler(async (request, response) => {
   const result = await specialtyService.list(specialtyListQuerySchema.parse(request.query));
-  response.status(200).json(
-    successResponse("Specialties retrieved successfully", result.specialties, result.meta),
-  );
+  response
+    .status(200)
+    .json(successResponse("Specialties retrieved successfully", result.specialties, result.meta));
 });
 
 export const deleteSpecialty = asyncHandler(async (request, response) => {
   const specialty = await specialtyService.delete(
-    String(request.params.specialtyId), actorFrom(request), contextFrom(request),
+    String(request.params.specialtyId),
+    actorFrom(request),
+    contextFrom(request),
   );
-  response.status(200).json(successResponse("Specialty deleted successfully", {
-    id: specialty.id,
-    title: specialty.title,
-    isDeleted: specialty.isDeleted,
-  }));
+  response.status(200).json(
+    successResponse("Specialty deleted successfully", {
+      id: specialty.id,
+      title: specialty.title,
+      isDeleted: specialty.isDeleted,
+    }),
+  );
 });

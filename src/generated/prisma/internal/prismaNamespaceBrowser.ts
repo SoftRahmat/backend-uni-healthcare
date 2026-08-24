@@ -71,6 +71,11 @@ export const ModelName = {
   Refund: 'Refund',
   StripeWebhookEvent: 'StripeWebhookEvent',
   Invoice: 'Invoice',
+  Prescription: 'Prescription',
+  PrescriptionMedicine: 'PrescriptionMedicine',
+  PrescriptionVersion: 'PrescriptionVersion',
+  Review: 'Review',
+  ReviewResponse: 'ReviewResponse',
   Schedule: 'Schedule',
   DoctorSchedule: 'DoctorSchedule',
   Specialty: 'Specialty'
@@ -269,6 +274,8 @@ export const DoctorScalarFieldEnum = {
   profilePhoto: 'profilePhoto',
   averageRating: 'averageRating',
   totalReviews: 'totalReviews',
+  isProfileVisible: 'isProfileVisible',
+  ratingReviewRequired: 'ratingReviewRequired',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   isDeleted: 'isDeleted',
@@ -295,6 +302,7 @@ export const PatientScalarFieldEnum = {
   contactNumber: 'contactNumber',
   address: 'address',
   profilePhoto: 'profilePhoto',
+  appointmentDiscountBps: 'appointmentDiscountBps',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   isDeleted: 'isDeleted',
@@ -443,6 +451,90 @@ export const InvoiceScalarFieldEnum = {
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const PrescriptionScalarFieldEnum = {
+  id: 'id',
+  prescriptionNumber: 'prescriptionNumber',
+  appointmentId: 'appointmentId',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  instructions: 'instructions',
+  followUpDate: 'followUpDate',
+  version: 'version',
+  reminderSentAt: 'reminderSentAt',
+  retentionUntil: 'retentionUntil',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PrescriptionScalarFieldEnum = (typeof PrescriptionScalarFieldEnum)[keyof typeof PrescriptionScalarFieldEnum]
+
+
+export const PrescriptionMedicineScalarFieldEnum = {
+  id: 'id',
+  prescriptionId: 'prescriptionId',
+  name: 'name',
+  dosage: 'dosage',
+  frequency: 'frequency',
+  duration: 'duration',
+  instructions: 'instructions',
+  sortOrder: 'sortOrder'
+} as const
+
+export type PrescriptionMedicineScalarFieldEnum = (typeof PrescriptionMedicineScalarFieldEnum)[keyof typeof PrescriptionMedicineScalarFieldEnum]
+
+
+export const PrescriptionVersionScalarFieldEnum = {
+  id: 'id',
+  prescriptionId: 'prescriptionId',
+  version: 'version',
+  instructions: 'instructions',
+  followUpDate: 'followUpDate',
+  medicines: 'medicines',
+  changedByUserId: 'changedByUserId',
+  overrideReason: 'overrideReason',
+  objectKey: 'objectKey',
+  fileUrl: 'fileUrl',
+  checksum: 'checksum',
+  sizeBytes: 'sizeBytes',
+  createdAt: 'createdAt'
+} as const
+
+export type PrescriptionVersionScalarFieldEnum = (typeof PrescriptionVersionScalarFieldEnum)[keyof typeof PrescriptionVersionScalarFieldEnum]
+
+
+export const ReviewScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  rating: 'rating',
+  comment: 'comment',
+  displayAnonymous: 'displayAnonymous',
+  isVerified: 'isVerified',
+  flaggedAt: 'flaggedAt',
+  flagReason: 'flagReason',
+  isDeleted: 'isDeleted',
+  deletedAt: 'deletedAt',
+  deletedByUserId: 'deletedByUserId',
+  deletionReason: 'deletionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReviewScalarFieldEnum = (typeof ReviewScalarFieldEnum)[keyof typeof ReviewScalarFieldEnum]
+
+
+export const ReviewResponseScalarFieldEnum = {
+  id: 'id',
+  reviewId: 'reviewId',
+  doctorId: 'doctorId',
+  response: 'response',
+  createdAt: 'createdAt'
+} as const
+
+export type ReviewResponseScalarFieldEnum = (typeof ReviewResponseScalarFieldEnum)[keyof typeof ReviewResponseScalarFieldEnum]
 
 
 export const ScheduleScalarFieldEnum = {

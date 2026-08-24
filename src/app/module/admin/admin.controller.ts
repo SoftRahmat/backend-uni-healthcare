@@ -1,10 +1,6 @@
 import type { Request } from "express";
 
-import {
-  adminListQuerySchema,
-  createAdminSchema,
-  updateAdminSchema,
-} from "./admin.validation.js";
+import { adminListQuerySchema, createAdminSchema, updateAdminSchema } from "./admin.validation.js";
 import { adminService } from "./admin.service.js";
 import type { RequestContext } from "../../interfaces/index.js";
 import { ApiError } from "../../errorHelpers/ApiError.js";
@@ -17,7 +13,8 @@ const contextFrom = (request: Request): RequestContext => ({
 });
 
 const actorFrom = (request: Request) => {
-  if (!request.auth) throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
+  if (!request.auth)
+    throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
   return { userId: request.auth.userId, role: request.auth.role };
 };
 
@@ -59,7 +56,7 @@ export const listAdmins = asyncHandler(async (request, response) => {
     actorFrom(request),
     contextFrom(request),
   );
-  response.status(200).json(
-    successResponse("Admins retrieved successfully", result.admins, result.meta),
-  );
+  response
+    .status(200)
+    .json(successResponse("Admins retrieved successfully", result.admins, result.meta));
 });

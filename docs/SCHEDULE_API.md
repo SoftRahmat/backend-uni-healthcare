@@ -6,12 +6,12 @@ The Schedule module owns its controller, service, routes, validation, caching ru
 
 ## Endpoints
 
-| Method | Path | Access | Purpose |
-| --- | --- | --- | --- |
-| POST | `/` | DOCTOR, ADMIN, SUPER_ADMIN | Create one or up to 100 schedules atomically |
-| GET | `/` | Public | Read a doctor's upcoming availability |
-| PATCH | `/:scheduleId` | Owning DOCTOR, ADMIN, SUPER_ADMIN | Partially update an unbooked schedule |
-| DELETE | `/:scheduleId` | Owning DOCTOR, ADMIN, SUPER_ADMIN | Soft-delete a future, unbooked schedule |
+| Method | Path           | Access                            | Purpose                                      |
+| ------ | -------------- | --------------------------------- | -------------------------------------------- |
+| POST   | `/`            | DOCTOR, ADMIN, SUPER_ADMIN        | Create one or up to 100 schedules atomically |
+| GET    | `/`            | Public                            | Read a doctor's upcoming availability        |
+| PATCH  | `/:scheduleId` | Owning DOCTOR, ADMIN, SUPER_ADMIN | Partially update an unbooked schedule        |
+| DELETE | `/:scheduleId` | Owning DOCTOR, ADMIN, SUPER_ADMIN | Soft-delete a future, unbooked schedule      |
 
 Doctors may omit `doctorId` during creation; the authenticated doctor profile is used. Administrators must supply the target `doctorId`.
 
@@ -46,11 +46,11 @@ Same-doctor mutations take a PostgreSQL advisory transaction lock before checkin
 
 `GET /api/v1/schedules?doctorId={uuid}` defaults to today through today plus seven days. Optional parameters:
 
-| Parameter | Description |
-| --- | --- |
-| `date` | A specific `YYYY-MM-DD` date; overrides the range |
-| `startDate`, `endDate` | Inclusive range |
-| `showBooked` | Defaults to `false`; `true` requires the owning doctor or an administrator |
+| Parameter              | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `date`                 | A specific `YYYY-MM-DD` date; overrides the range                          |
+| `startDate`, `endDate` | Inclusive range                                                            |
+| `showBooked`           | Defaults to `false`; `true` requires the owning doctor or an administrator |
 
 Past dates are always excluded. Results sort by date and start time ascending and include doctor name, specialties, and appointment fee. Availability responses are cached per doctor/range/visibility for five minutes. Create, update, delete, doctor deactivation, and the future appointment-booking transaction invalidate the relevant schedule and doctor availability keys.
 
@@ -62,13 +62,13 @@ Phase 6 will set `Schedule.isBooked` in the same transaction that creates an app
 
 ## Main errors
 
-| Status | Code | Meaning |
-| --- | --- | --- |
-| 400 | `VALIDATION_ERROR`, `DOCTOR_ID_REQUIRED`, `PAST_SCHEDULE_DATE`, `INVALID_TIME_RANGE`, `INVALID_SCHEDULE_DURATION` | Invalid request or timing |
-| 401 | `AUTHENTICATION_REQUIRED` | Mutation has no valid session |
-| 403 | `FORBIDDEN` | Role, ownership, or booked-slot visibility denied |
-| 404 | `DOCTOR_NOT_FOUND`, `SCHEDULE_NOT_FOUND` | Active doctor or schedule not found |
-| 409 | `SCHEDULE_OVERLAP`, `SCHEDULE_ALREADY_BOOKED`, `PAST_SCHEDULE_ARCHIVED` | Schedule conflicts with business state |
+| Status | Code                                                                                                              | Meaning                                           |
+| ------ | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`, `DOCTOR_ID_REQUIRED`, `PAST_SCHEDULE_DATE`, `INVALID_TIME_RANGE`, `INVALID_SCHEDULE_DURATION` | Invalid request or timing                         |
+| 401    | `AUTHENTICATION_REQUIRED`                                                                                         | Mutation has no valid session                     |
+| 403    | `FORBIDDEN`                                                                                                       | Role, ownership, or booked-slot visibility denied |
+| 404    | `DOCTOR_NOT_FOUND`, `SCHEDULE_NOT_FOUND`                                                                          | Active doctor or schedule not found               |
+| 409    | `SCHEDULE_OVERLAP`, `SCHEDULE_ALREADY_BOOKED`, `PAST_SCHEDULE_ARCHIVED`                                           | Schedule conflicts with business state            |
 
 ## Requirement coverage
 

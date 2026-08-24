@@ -22,16 +22,30 @@ import {
 export const patientRouter = Router();
 
 patientRouter.use(authenticate);
-patientRouter.get("/", authorizeExact("SUPER_ADMIN", "ADMIN"), validate({ query: patientListQuerySchema }), listPatients);
+patientRouter.get(
+  "/",
+  authorizeExact("SUPER_ADMIN", "ADMIN"),
+  validate({ query: patientListQuerySchema }),
+  listPatients,
+);
 patientRouter.get("/me", authorizeExact("PATIENT"), getOwnPatient);
-patientRouter.patch("/me", authorizeExact("PATIENT"), validate({ body: updatePatientSchema }), updateOwnPatient);
+patientRouter.patch(
+  "/me",
+  authorizeExact("PATIENT"),
+  validate({ body: updatePatientSchema }),
+  updateOwnPatient,
+);
 patientRouter.get("/:patientId", validate({ params: patientIdParamsSchema }), getPatient);
 patientRouter.patch(
-  "/:patientId", authorizeExact("SUPER_ADMIN", "ADMIN", "PATIENT"),
-  validate({ params: patientIdParamsSchema, body: updatePatientSchema }), updatePatient,
+  "/:patientId",
+  authorizeExact("SUPER_ADMIN", "ADMIN", "PATIENT"),
+  validate({ params: patientIdParamsSchema, body: updatePatientSchema }),
+  updatePatient,
 );
 patientRouter.put(
-  "/:patientId/health-data", authorizeExact("PATIENT"),
-  validate({ params: patientIdParamsSchema, body: patientHealthDataSchema }), savePatientHealthData,
+  "/:patientId/health-data",
+  authorizeExact("PATIENT"),
+  validate({ params: patientIdParamsSchema, body: patientHealthDataSchema }),
+  savePatientHealthData,
 );
 patientRouter.use("/:patientId/medical-reports", medicalReportRouter);

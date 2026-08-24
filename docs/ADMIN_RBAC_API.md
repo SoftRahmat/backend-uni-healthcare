@@ -58,26 +58,26 @@ Exact role: `SUPER_ADMIN`.
 
 Query parameters:
 
-| Parameter | Default | Rules |
-| --- | --- | --- |
-| `page` | `1` | Minimum 1 |
-| `limit` | `10` | 1–100 |
-| `searchTerm` | — | Case-insensitive name/email search |
-| `status` | — | `ACTIVE` or `BLOCKED` |
-| `role` | — | `ADMIN` or `SUPER_ADMIN` |
-| `sortBy` | `createdAt` | `createdAt`, `name`, or `email` |
-| `sortOrder` | `desc` | `asc` or `desc` |
-| `includeDeleted` | `false` | Super-admin soft-delete visibility |
+| Parameter        | Default     | Rules                              |
+| ---------------- | ----------- | ---------------------------------- |
+| `page`           | `1`         | Minimum 1                          |
+| `limit`          | `10`        | 1–100                              |
+| `searchTerm`     | —           | Case-insensitive name/email search |
+| `status`         | —           | `ACTIVE` or `BLOCKED`              |
+| `role`           | —           | `ADMIN` or `SUPER_ADMIN`           |
+| `sortBy`         | `createdAt` | `createdAt`, `name`, or `email`    |
+| `sortOrder`      | `desc`      | `asc` or `desc`                    |
+| `includeDeleted` | `false`     | Super-admin soft-delete visibility |
 
 The response contains only the public Admin ID and profile/user presentation fields. It excludes `userId`, account records, password hashes, session tokens, and other internal relationship identifiers.
 
 ## Requirement coverage
 
-| Requirement | Implementation evidence |
-| --- | --- |
-| FR-RBAC-001 | Non-null Prisma role enum, rank map, token/database role validation, one-to-one Admin/Patient profiles |
-| FR-RBAC-002 | Authentication, hierarchical and exact-role middleware, status errors, multiple allowed roles |
-| FR-RBAC-003 | Reusable service-layer ownership assertion, cross-user denial, configurable admin override |
+| Requirement  | Implementation evidence                                                                                                |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| FR-RBAC-001  | Non-null Prisma role enum, rank map, token/database role validation, one-to-one Admin/Patient profiles                 |
+| FR-RBAC-002  | Authentication, hierarchical and exact-role middleware, status errors, multiple allowed roles                          |
+| FR-RBAC-003  | Reusable service-layer ownership assertion, cross-user denial, configurable admin override                             |
 | FR-ADMIN-001 | SUPER_ADMIN route and service checks, atomic identity/profile/credential creation, validation, defaults, welcome email |
-| FR-ADMIN-002 | Self-versus-super privilege rules, atomic User/Admin synchronization, session/cache invalidation, audit events |
-| FR-ADMIN-003 | Pagination, filters, search, sorting, soft-delete visibility, sanitized response mapping, list audit |
+| FR-ADMIN-002 | Self-versus-super privilege rules, atomic User/Admin synchronization, session/cache invalidation, audit events         |
+| FR-ADMIN-003 | Pagination, filters, search, sorting, soft-delete visibility, sanitized response mapping, list audit                   |

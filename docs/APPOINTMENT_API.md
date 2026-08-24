@@ -6,15 +6,15 @@ The module lives in `src/app/module/appointment` and owns its controller, servic
 
 ## Endpoints
 
-| Method | Path | Access | Purpose |
-| --- | --- | --- | --- |
-| POST | `/` | PATIENT, ADMIN, SUPER_ADMIN | Book an appointment and initiate its pending payment |
-| GET | `/patient/:patientId` | Patient owner, ADMIN/SUPER_ADMIN | Paginated patient history with doctor, schedule, and payment |
-| GET | `/doctor/:doctorId` | Doctor owner, ADMIN/SUPER_ADMIN | Paginated/grouped doctor workload with patient health summary |
-| GET | `/search` | ADMIN, SUPER_ADMIN | Combined search, filters, pagination, revenue/status/specialty analytics |
-| GET | `/:appointmentId` | Assigned patient/doctor, ADMIN/SUPER_ADMIN | Role-sanitized appointment detail and conditional video link |
-| PATCH | `/:appointmentId/status` | Assigned doctor or administrator; patient cancellation only | Apply a valid lifecycle transition |
-| POST | `/:appointmentId/cancel` | Assigned patient/doctor, ADMIN/SUPER_ADMIN | Apply cancellation/refund policy atomically |
+| Method | Path                     | Access                                                      | Purpose                                                                  |
+| ------ | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
+| POST   | `/`                      | PATIENT, ADMIN, SUPER_ADMIN                                 | Book an appointment and initiate its pending payment                     |
+| GET    | `/patient/:patientId`    | Patient owner, ADMIN/SUPER_ADMIN                            | Paginated patient history with doctor, schedule, and payment             |
+| GET    | `/doctor/:doctorId`      | Doctor owner, ADMIN/SUPER_ADMIN                             | Paginated/grouped doctor workload with patient health summary            |
+| GET    | `/search`                | ADMIN, SUPER_ADMIN                                          | Combined search, filters, pagination, revenue/status/specialty analytics |
+| GET    | `/:appointmentId`        | Assigned patient/doctor, ADMIN/SUPER_ADMIN                  | Role-sanitized appointment detail and conditional video link             |
+| PATCH  | `/:appointmentId/status` | Assigned doctor or administrator; patient cancellation only | Apply a valid lifecycle transition                                       |
+| POST   | `/:appointmentId/cancel` | Assigned patient/doctor, ADMIN/SUPER_ADMIN                  | Apply cancellation/refund policy atomically                              |
 
 ## Transactional booking
 
@@ -50,14 +50,14 @@ SCHEDULED -> CANCELLED
 
 ## Cancellation and refunds
 
-| Actor/time before start | Allowed | Paid-payment result |
-| --- | --- | --- |
-| Patient, at least 24 hours | Yes | Full refund |
-| Doctor, at least 24 hours | Yes | Full refund |
-| Doctor, 12–24 hours | Yes | 50% partial refund |
-| Admin, at least 24 hours | Yes | Full refund |
-| Admin, 12–24 hours | Yes | 50% partial refund |
-| Admin, under 12 hours | Yes | No refund |
+| Actor/time before start    | Allowed | Paid-payment result |
+| -------------------------- | ------- | ------------------- |
+| Patient, at least 24 hours | Yes     | Full refund         |
+| Doctor, at least 24 hours  | Yes     | Full refund         |
+| Doctor, 12–24 hours        | Yes     | 50% partial refund  |
+| Admin, at least 24 hours   | Yes     | Full refund         |
+| Admin, 12–24 hours         | Yes     | 50% partial refund  |
+| Admin, under 12 hours      | Yes     | No refund           |
 
 Cancellation records the actor, role, reason, timestamp, refund type/amount, executes an idempotent provider refund for eligible paid appointments, updates payment/refund state, and releases the schedule.
 
@@ -67,7 +67,7 @@ Patients can view only their appointments; doctors can view only assigned appoin
 
 Each appointment stores a random meeting ID. A short-lived signed video token is returned only from 15 minutes before start until one hour after end; cancelled appointments and requests outside the window receive no link.
 
-Prescription and review fields remain `null` until Phases 8 and 9 create those relations.
+Completed appointments include the linked prescription summary when one exists. Review remains `null` until Phase 9 creates that relation.
 
 ## Filters
 
@@ -75,13 +75,13 @@ Patient and doctor views support status lists, date filters, pagination, and rol
 
 ## Main errors
 
-| Status | Codes |
-| --- | --- |
-| 400 | `VALIDATION_ERROR`, `HEALTH_DATA_REQUIRED`, `PAST_APPOINTMENT_SLOT`, `INVALID_STATUS_TRANSITION`, `APPOINTMENT_TOO_EARLY`, `CANCELLATION_WINDOW_CLOSED` |
-| 401 | `AUTHENTICATION_REQUIRED` |
-| 403 | `FORBIDDEN`, `PATIENT_ASSIGNMENT_REQUIRED` |
-| 404 | `PATIENT_NOT_FOUND`, `SCHEDULE_NOT_FOUND`, `APPOINTMENT_NOT_FOUND` |
-| 409 | `SCHEDULE_ALREADY_BOOKED`, `PATIENT_DOUBLE_BOOKING`, `MONTHLY_APPOINTMENT_LIMIT`, `DOCTOR_REBOOKING_LIMIT`, `APPOINTMENT_FINALIZED`, `APPOINTMENT_NOT_CANCELLABLE`, `APPOINTMENT_STATUS_CONFLICT` |
+| Status | Codes                                                                                                                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `VALIDATION_ERROR`, `HEALTH_DATA_REQUIRED`, `PAST_APPOINTMENT_SLOT`, `INVALID_STATUS_TRANSITION`, `APPOINTMENT_TOO_EARLY`, `CANCELLATION_WINDOW_CLOSED`                                           |
+| 401    | `AUTHENTICATION_REQUIRED`                                                                                                                                                                         |
+| 403    | `FORBIDDEN`, `PATIENT_ASSIGNMENT_REQUIRED`                                                                                                                                                        |
+| 404    | `PATIENT_NOT_FOUND`, `SCHEDULE_NOT_FOUND`, `APPOINTMENT_NOT_FOUND`                                                                                                                                |
+| 409    | `SCHEDULE_ALREADY_BOOKED`, `PATIENT_DOUBLE_BOOKING`, `MONTHLY_APPOINTMENT_LIMIT`, `DOCTOR_REBOOKING_LIMIT`, `APPOINTMENT_FINALIZED`, `APPOINTMENT_NOT_CANCELLABLE`, `APPOINTMENT_STATUS_CONFLICT` |
 
 ## Requirement coverage
 

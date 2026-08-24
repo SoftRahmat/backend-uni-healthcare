@@ -34,11 +34,11 @@ All mutations invalidate specialty and affected doctor caches and create audit r
 
 ## Requirement coverage status
 
-| Requirement | Status |
-| --- | --- |
-| FR-DOCTOR-001 | Implemented: atomic creation, credential/fee validation, defaults, specialties, welcome workflow |
-| FR-DOCTOR-002 | Implemented: ownership/admin override, partial updates, immutable fields, specialty replacement, User synchronization, invalidation |
-| FR-DOCTOR-003 | Implemented: pagination, filters, sorting, related specialties, sanitization, active visibility, five-minute cache |
-| FR-DOCTOR-004 | Core detail and ten-minute cache implemented; reviews and schedule availability populate when Phases 5 and 9 add those models |
-| FR-DOCTOR-005 | Core soft deletion, login/session prevention, audit, email, cache implemented; appointment/prescription dependency checks and patient notifications populate when Phases 6 and 8 add those models |
-| FR-SPECIALTY-001–004 | Implemented: CRUD, authorization, uniqueness, public counts/list, caching, dependency/minimum rules, soft deletion |
+| Requirement          | Status                                                                                                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| FR-DOCTOR-001        | Implemented: atomic creation, credential/fee validation, defaults, specialties, welcome workflow                                                                                                         |
+| FR-DOCTOR-002        | Implemented: ownership/admin override, partial updates, immutable fields, specialty replacement, User synchronization, invalidation                                                                      |
+| FR-DOCTOR-003        | Implemented: pagination, filters, sorting, related specialties, sanitization, active visibility, five-minute cache                                                                                       |
+| FR-DOCTOR-004        | Core detail and ten-minute cache implemented; reviews and schedule availability populate when Phases 5 and 9 add those models                                                                            |
+| FR-DOCTOR-005        | Core soft deletion, login/session prevention, audit, email, cache, appointment and retained-prescription relations implemented; patient-impact notification expansion remains an external workflow check |
+| FR-SPECIALTY-001–004 | Implemented: CRUD, authorization, uniqueness, public counts/list, caching, dependency/minimum rules, soft deletion                                                                                       |

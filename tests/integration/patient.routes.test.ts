@@ -17,7 +17,10 @@ describe("patient and medical report route boundaries", () => {
   it("does not process unauthenticated multipart uploads", async () => {
     const response = await request(app)
       .post("/api/v1/patients/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11/medical-reports")
-      .attach("file", Buffer.from("%PDF-1.7\ncontent"), { filename: "report.pdf", contentType: "application/pdf" })
+      .attach("file", Buffer.from("%PDF-1.7\ncontent"), {
+        filename: "report.pdf",
+        contentType: "application/pdf",
+      })
       .field("reportName", "Blood test")
       .field("reportType", "LAB_TEST")
       .expect(401);

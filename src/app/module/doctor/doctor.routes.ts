@@ -21,21 +21,43 @@ import {
 
 export const doctorRouter = Router();
 
-doctorRouter.get("/", optionalAuthenticate, validate({ query: doctorListQuerySchema }), listDoctors);
-doctorRouter.get("/:doctorId", optionalAuthenticate, validate({ params: doctorIdParamsSchema }), getDoctor);
+doctorRouter.get(
+  "/",
+  optionalAuthenticate,
+  validate({ query: doctorListQuerySchema }),
+  listDoctors,
+);
+doctorRouter.get(
+  "/:doctorId",
+  optionalAuthenticate,
+  validate({ params: doctorIdParamsSchema }),
+  getDoctor,
+);
 doctorRouter.post(
-  "/", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN"),
-  validate({ body: createDoctorSchema }), createDoctor,
+  "/",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN"),
+  validate({ body: createDoctorSchema }),
+  createDoctor,
 );
 doctorRouter.patch(
-  "/me", authenticate, authorizeExact("DOCTOR"),
-  validate({ body: updateDoctorSchema }), updateOwnDoctorProfile,
+  "/me",
+  authenticate,
+  authorizeExact("DOCTOR"),
+  validate({ body: updateDoctorSchema }),
+  updateOwnDoctorProfile,
 );
 doctorRouter.patch(
-  "/:doctorId", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
-  validate({ params: doctorIdParamsSchema, body: updateDoctorSchema }), updateDoctor,
+  "/:doctorId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN", "DOCTOR"),
+  validate({ params: doctorIdParamsSchema, body: updateDoctorSchema }),
+  updateDoctor,
 );
 doctorRouter.delete(
-  "/:doctorId", authenticate, authorizeExact("SUPER_ADMIN", "ADMIN"),
-  validate({ params: doctorIdParamsSchema, body: deleteDoctorSchema }), deleteDoctor,
+  "/:doctorId",
+  authenticate,
+  authorizeExact("SUPER_ADMIN", "ADMIN"),
+  validate({ params: doctorIdParamsSchema, body: deleteDoctorSchema }),
+  deleteDoctor,
 );

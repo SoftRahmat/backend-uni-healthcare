@@ -14,7 +14,12 @@ export class AppointmentVideoService {
   }
 
   async accessLink(
-    appointment: { id: string; status?: string; videoCallingId: string; schedule: { scheduleDate: Date; startTime: string; endTime: string } },
+    appointment: {
+      id: string;
+      status?: string;
+      videoCallingId: string;
+      schedule: { scheduleDate: Date; startTime: string; endTime: string };
+    },
     actor: { userId: string; role: ApplicationRole },
     now = new Date(),
   ): Promise<string | null> {
@@ -23,7 +28,11 @@ export class AppointmentVideoService {
     if (now.getTime() < startsAt.getTime() - 15 * 60 * 1_000) return null;
     const expiresAt = new Date(endsAt.getTime() + 60 * 60 * 1_000);
     if (now >= expiresAt) return null;
-    const token = await new SignJWT({ appointmentId: appointment.id, meetingId: appointment.videoCallingId, role: actor.role })
+    const token = await new SignJWT({
+      appointmentId: appointment.id,
+      meetingId: appointment.videoCallingId,
+      role: actor.role,
+    })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
       .setSubject(actor.userId)
       .setIssuedAt()
