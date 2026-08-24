@@ -1,0 +1,26 @@
+model Payment {
+  id String @id @default(uuid(7))
+
+  appointmentId  String        @unique
+  amount         Int
+  currency       String        @default("USD") @db.Char(3)
+  status         PaymentStatus @default(PENDING)
+  paymentLink    String?       @db.VarChar(2048)
+  expiresAt      DateTime
+  transactionId  String?       @unique @db.VarChar(255)
+  paidAt         DateTime?
+  refundAmount   Int           @default(0)
+  refundedAt     DateTime?
+  stripeRefundId String?       @unique @db.VarChar(255)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt], name: "idx_payment_status_created")
+  @@index([expiresAt], name: "idx_payment_expiresAt")
+  @@map("payments")
+}

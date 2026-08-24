@@ -6,14 +6,75 @@ model Patient {
   email         String  @unique @db.VarChar(320)
   contactNumber String? @db.VarChar(30)
   address       String? @db.Text
+  profilePhoto  String? @db.VarChar(2048)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  healthData     PatientHealthData?
+  medicalReports MedicalReport[]
+  appointments   Appointment[]
 
   @@index([isDeleted], name: "idx_patient_isDeleted")
   @@map("patients")
+}
+
+model PatientHealthData {
+  id String @id @default(uuid(7))
+
+  patientId             String         @unique
+  dateOfBirth           DateTime       @db.Date
+  gender                Gender
+  bloodGroup            BloodGroup?
+  maritalStatus         MaritalStatus?
+  heightCm              Float?
+  weightKg              Float?
+  bmi                   Float?
+  allergies             String?        @db.VarChar(1000)
+  chronicConditions     String?        @db.VarChar(1000)
+  currentMedications    String?        @db.VarChar(1000)
+  familyMedicalHistory  String?        @db.VarChar(2000)
+  emergencyContactName  String?        @db.VarChar(100)
+  emergencyContactPhone String?        @db.VarChar(30)
+  smokingStatus         Boolean?
+  alcoholConsumption    Boolean?
+  dietaryPreferences    String?        @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("patient_health_data")
+}
+
+model MedicalReport {
+  id String @id @default(uuid(7))
+
+  patientId        String
+  reportName       String     @db.VarChar(200)
+  reportType       ReportType
+  notes            String?    @db.VarChar(1000)
+  objectKey        String     @unique @db.VarChar(1024)
+  fileUrl          String     @db.VarChar(2048)
+  originalFileName String     @db.VarChar(255)
+  mimeType         String     @db.VarChar(100)
+  sizeBytes        Int
+  retentionUntil   DateTime
+  storageDeletedAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([patientId, createdAt(sort: Desc)], name: "idx_medical_report_patient_created")
+  @@index([reportType], name: "idx_medical_report_type")
+  @@index([isDeleted], name: "idx_medical_report_isDeleted")
+  @@map("medical_reports")
 }

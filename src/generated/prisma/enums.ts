@@ -46,6 +46,71 @@ export const Gender = {
 export type Gender = (typeof Gender)[keyof typeof Gender]
 
 
+export const BloodGroup = {
+  A_POSITIVE: 'A_POSITIVE',
+  A_NEGATIVE: 'A_NEGATIVE',
+  B_POSITIVE: 'B_POSITIVE',
+  B_NEGATIVE: 'B_NEGATIVE',
+  AB_POSITIVE: 'AB_POSITIVE',
+  AB_NEGATIVE: 'AB_NEGATIVE',
+  O_POSITIVE: 'O_POSITIVE',
+  O_NEGATIVE: 'O_NEGATIVE'
+} as const
+
+export type BloodGroup = (typeof BloodGroup)[keyof typeof BloodGroup]
+
+
+export const MaritalStatus = {
+  SINGLE: 'SINGLE',
+  MARRIED: 'MARRIED',
+  DIVORCED: 'DIVORCED',
+  WIDOWED: 'WIDOWED'
+} as const
+
+export type MaritalStatus = (typeof MaritalStatus)[keyof typeof MaritalStatus]
+
+
+export const ReportType = {
+  LAB_TEST: 'LAB_TEST',
+  IMAGING: 'IMAGING',
+  PRESCRIPTION: 'PRESCRIPTION',
+  DISCHARGE_SUMMARY: 'DISCHARGE_SUMMARY',
+  OTHER: 'OTHER'
+} as const
+
+export type ReportType = (typeof ReportType)[keyof typeof ReportType]
+
+
+export const AppointmentStatus = {
+  SCHEDULED: 'SCHEDULED',
+  INPROGRESS: 'INPROGRESS',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type AppointmentStatus = (typeof AppointmentStatus)[keyof typeof AppointmentStatus]
+
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED',
+  PARTIAL_REFUND: 'PARTIAL_REFUND'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const RefundType = {
+  NONE: 'NONE',
+  FULL: 'FULL',
+  PARTIAL: 'PARTIAL'
+} as const
+
+export type RefundType = (typeof RefundType)[keyof typeof RefundType]
+
+
 export const AuditAction = {
   USER_REGISTERED: 'USER_REGISTERED',
   EMAIL_VERIFIED: 'EMAIL_VERIFIED',
@@ -70,7 +135,24 @@ export const AuditAction = {
   DOCTOR_DELETED: 'DOCTOR_DELETED',
   SPECIALTY_CREATED: 'SPECIALTY_CREATED',
   SPECIALTY_UPDATED: 'SPECIALTY_UPDATED',
-  SPECIALTY_DELETED: 'SPECIALTY_DELETED'
+  SPECIALTY_DELETED: 'SPECIALTY_DELETED',
+  PATIENT_PROFILE_UPDATED: 'PATIENT_PROFILE_UPDATED',
+  PATIENT_LIST_VIEWED: 'PATIENT_LIST_VIEWED',
+  PATIENT_DETAIL_VIEWED: 'PATIENT_DETAIL_VIEWED',
+  PATIENT_HEALTH_DATA_SAVED: 'PATIENT_HEALTH_DATA_SAVED',
+  MEDICAL_REPORT_UPLOADED: 'MEDICAL_REPORT_UPLOADED',
+  MEDICAL_REPORT_VIEWED: 'MEDICAL_REPORT_VIEWED',
+  MEDICAL_REPORT_DELETED: 'MEDICAL_REPORT_DELETED',
+  SCHEDULE_CREATED: 'SCHEDULE_CREATED',
+  SCHEDULE_UPDATED: 'SCHEDULE_UPDATED',
+  SCHEDULE_DELETED: 'SCHEDULE_DELETED',
+  APPOINTMENT_BOOKED: 'APPOINTMENT_BOOKED',
+  APPOINTMENT_LIST_VIEWED: 'APPOINTMENT_LIST_VIEWED',
+  APPOINTMENT_DETAIL_VIEWED: 'APPOINTMENT_DETAIL_VIEWED',
+  APPOINTMENT_STATUS_UPDATED: 'APPOINTMENT_STATUS_UPDATED',
+  APPOINTMENT_CANCELLED: 'APPOINTMENT_CANCELLED',
+  APPOINTMENT_AUTO_COMPLETED: 'APPOINTMENT_AUTO_COMPLETED',
+  APPOINTMENT_PAYMENT_EXPIRED: 'APPOINTMENT_PAYMENT_EXPIRED'
 } as const
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]

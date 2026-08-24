@@ -1,0 +1,38 @@
+model Appointment {
+  id String @id @default(uuid(7))
+
+  patientId  String
+  doctorId   String
+  scheduleId String
+
+  status         AppointmentStatus @default(SCHEDULED)
+  appointmentFee Int
+  notes          String?           @db.VarChar(1000)
+  videoCallingId String            @unique @db.VarChar(100)
+
+  startedAt          DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancelledByUserId  String?    @db.VarChar(100)
+  cancelledByRole    UserRole?
+  cancellationReason String?    @db.VarChar(500)
+  refundType         RefundType @default(NONE)
+  refundAmount       Int        @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  patient  Patient  @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+  payment  Payment?
+
+  @@index([patientId, status], name: "idx_appointment_patient_status")
+  @@index([doctorId, status], name: "idx_appointment_doctor_status")
+  @@index([scheduleId], name: "idx_appointment_scheduleId")
+  @@index([status, createdAt], name: "idx_appointment_status_created")
+  @@index([isDeleted], name: "idx_appointment_isDeleted")
+  @@map("appointments")
+}

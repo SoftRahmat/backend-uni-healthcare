@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import multer from "multer";
 import { ZodError } from "zod";
 
 import { env } from "../config/env.js";
@@ -27,6 +28,10 @@ export const errorHandler: ErrorRequestHandler = (error, request, response, _nex
     apiError = error;
   } else if (error instanceof ZodError) {
     apiError = new ApiError(400, "Request validation failed", "VALIDATION_ERROR", error.flatten());
+  } else if (error instanceof multer.MulterError) {
+    apiError = error.code === "LIMIT_FILE_SIZE"
+      ? new ApiError(413, "Medical report must not exceed 10 MB", "FILE_TOO_LARGE")
+      : new ApiError(400, "Medical report upload failed", "UPLOAD_ERROR", { code: error.code });
   } else if (isInvalidJsonError(error)) {
     apiError = new ApiError(400, "Request body contains invalid JSON", "INVALID_JSON");
   } else if (isPayloadTooLargeError(error)) {

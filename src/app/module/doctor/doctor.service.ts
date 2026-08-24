@@ -7,6 +7,7 @@ import { prisma } from "../../lib/prisma.js";
 import type { ApplicationRole } from "../../shared/constants/roles.js";
 import { hashPassword } from "../../utils/password.js";
 import { DoctorEmailService } from "./doctor-email.service.js";
+import { addIsoDays, todayInScheduleTimeZone } from "../schedule/schedule.validation.js";
 import type {
   CreateDoctorInput,
   DeleteDoctorInput,
@@ -22,7 +23,15 @@ type DoctorWithRelations = Prisma.DoctorGetPayload<{
 const isAdmin = (role: ApplicationRole): boolean => ["SUPER_ADMIN", "ADMIN"].includes(role);
 const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 const invalidateDoctorCaches = (doctorId?: string): void => {
-  applicationCache.deleteByPrefix("doctors:list:", "specialties:list:", ...(doctorId ? [`doctor:${doctorId}`] : []));
+  applicationCache.deleteByPrefix(
+    "doctors:list:",
+    "specialties:list:",
+    ...(doctorId ? [
+      `doctor:${doctorId}`,
+      `schedules:doctor:${doctorId}:`,
+      `appointments:doctor:${doctorId}:`,
+    ] : []),
+  );
 };
 
 const doctorView = (doctor: DoctorWithRelations) => ({
@@ -291,7 +300,11 @@ export class DoctorService {
     const cacheKey = `doctor:${doctorId}:${actor?.role ?? "PUBLIC"}`;
     const cached = applicationCache.get<ReturnType<typeof doctorView> & {
       recentReviews: unknown[];
-      availability: { nextAvailableDate: null; totalAvailableSlotsThisWeek: number };
+      availability: {
+        hasAvailableSlots: boolean;
+        nextAvailableDate: string | null;
+        availableSlotsThisWeek: number;
+      };
     }>(cacheKey);
     if (cached) return cached;
     const doctor = await prisma.doctor.findFirst({
@@ -302,10 +315,33 @@ export class DoctorService {
     if (doctor.user.status === "BLOCKED" && !(actor && isAdmin(actor.role))) {
       throw new ApiError(403, "Doctor is not currently available", "DOCTOR_BLOCKED");
     }
+    const today = todayInScheduleTimeZone();
+    const endDate = addIsoDays(today, 7);
+    const availabilityWhere: Prisma.ScheduleWhereInput = {
+      isDeleted: false,
+      isBooked: false,
+      scheduleDate: {
+        gte: new Date(`${today}T00:00:00.000Z`),
+        lte: new Date(`${endDate}T00:00:00.000Z`),
+      },
+      doctors: { some: { doctorId, isActive: true } },
+    };
+    const [nextAvailable, availableSlotsThisWeek] = await prisma.$transaction([
+      prisma.schedule.findFirst({
+        where: availabilityWhere,
+        orderBy: [{ scheduleDate: "asc" }, { startTime: "asc" }],
+        select: { scheduleDate: true },
+      }),
+      prisma.schedule.count({ where: availabilityWhere }),
+    ]);
     const result = {
       ...doctorView(doctor),
       recentReviews: [],
-      availability: { nextAvailableDate: null, totalAvailableSlotsThisWeek: 0 },
+      availability: {
+        hasAvailableSlots: availableSlotsThisWeek > 0,
+        nextAvailableDate: nextAvailable?.scheduleDate.toISOString().slice(0, 10) ?? null,
+        availableSlotsThisWeek,
+      },
     };
     applicationCache.set(cacheKey, result, 10 * 60);
     return result;
@@ -337,6 +373,10 @@ export class DoctorService {
         data: { status: "BLOCKED", lockedAt: new Date() },
       });
       await transaction.session.deleteMany({ where: { userId: existing.userId } });
+      await transaction.doctorSchedule.updateMany({
+        where: { doctorId },
+        data: { isActive: false },
+      });
       await transaction.auditLog.create({
         data: {
           action: "DOCTOR_DELETED",

@@ -24,6 +24,33 @@ const environmentSchema = z.object({
   JWT_SECRET: z.string().min(32),
   BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
   EMAIL_FROM: z.email().default("no-reply@ph-healthcare.local"),
+  S3_REGION: z.string().min(1).default("us-east-1"),
+  S3_BUCKET: z.string().min(3).default("ph-healthcare-private"),
+  S3_ENDPOINT: z.url().optional(),
+  S3_ACCESS_KEY_ID: z.string().min(1).optional(),
+  S3_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  S3_FORCE_PATH_STYLE: z.enum(["true", "false"]).default("false")
+    .transform((value) => value === "true"),
+  VIRUS_SCAN_URL: z.url().optional(),
+  VIRUS_SCAN_API_KEY: z.string().min(1).optional(),
+  SCHEDULE_TIME_ZONE: z.string().min(1).default("UTC"),
+}).superRefine((value, context) => {
+  if (Boolean(value.S3_ACCESS_KEY_ID) !== Boolean(value.S3_SECRET_ACCESS_KEY)) {
+    context.addIssue({
+      code: "custom",
+      path: ["S3_ACCESS_KEY_ID"],
+      message: "S3 access key ID and secret access key must be configured together",
+    });
+  }
+  try {
+    new Intl.DateTimeFormat("en-CA", { timeZone: value.SCHEDULE_TIME_ZONE }).format(new Date());
+  } catch {
+    context.addIssue({
+      code: "custom",
+      path: ["SCHEDULE_TIME_ZONE"],
+      message: "Schedule timezone must be a valid IANA timezone",
+    });
+  }
 });
 
 const runtimeEnvironment = {

@@ -23,6 +23,11 @@ export * from './enums.js';
  */
 export type Admin = Prisma.AdminModel
 /**
+ * Model Appointment
+ * 
+ */
+export type Appointment = Prisma.AppointmentModel
+/**
  * Model User
  * 
  */
@@ -77,6 +82,31 @@ export type DoctorSpecialty = Prisma.DoctorSpecialtyModel
  * 
  */
 export type Patient = Prisma.PatientModel
+/**
+ * Model PatientHealthData
+ * 
+ */
+export type PatientHealthData = Prisma.PatientHealthDataModel
+/**
+ * Model MedicalReport
+ * 
+ */
+export type MedicalReport = Prisma.MedicalReportModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel
+/**
+ * Model Schedule
+ * 
+ */
+export type Schedule = Prisma.ScheduleModel
+/**
+ * Model DoctorSchedule
+ * 
+ */
+export type DoctorSchedule = Prisma.DoctorScheduleModel
 /**
  * Model Specialty
  * 

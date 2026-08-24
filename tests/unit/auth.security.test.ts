@@ -29,9 +29,11 @@ describe("authentication security primitives", () => {
       role: "PATIENT" as const,
     };
     const token = await signAccessToken(claims);
+    const [header, payload, signature = ""] = token.split(".");
+    const tamperedSignature = `${signature[0] === "A" ? "B" : "A"}${signature.slice(1)}`;
 
     await expect(verifyAccessToken(token)).resolves.toEqual(claims);
-    await expect(verifyAccessToken(`${token.slice(0, -1)}x`)).rejects.toThrow();
+    await expect(verifyAccessToken(`${header}.${payload}.${tamperedSignature}`)).rejects.toThrow();
   });
 
   it("uses bcrypt hashes and detects password reuse", async () => {

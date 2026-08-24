@@ -1,0 +1,35 @@
+model Schedule {
+  id String @id @default(uuid(7))
+
+  scheduleDate DateTime @db.Date
+  startTime    String   @db.VarChar(5)
+  endTime      String   @db.VarChar(5)
+  isBooked     Boolean  @default(false)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  doctors      DoctorSchedule[]
+  appointments Appointment[]
+
+  @@index([scheduleDate, startTime], name: "idx_schedule_date_start")
+  @@index([isBooked, isDeleted], name: "idx_schedule_booking_deleted")
+  @@map("schedules")
+}
+
+model DoctorSchedule {
+  doctorId   String
+  scheduleId String
+  isActive   Boolean  @default(true)
+  assignedAt DateTime @default(now())
+
+  doctor   Doctor   @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+
+  @@id([doctorId, scheduleId])
+  @@index([scheduleId], name: "idx_doctor_schedule_scheduleId")
+  @@index([doctorId, isActive], name: "idx_doctor_schedule_doctor_active")
+  @@map("doctor_schedules")
+}

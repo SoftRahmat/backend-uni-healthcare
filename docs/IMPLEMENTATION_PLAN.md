@@ -28,9 +28,9 @@ Last updated: 2026-08-24
 | 1 | Authentication and sessions | FR-AUTH-001 through FR-AUTH-007 | In progress |
 | 2 | RBAC and admin management | FR-RBAC-001 through FR-RBAC-003; FR-ADMIN-001 through FR-ADMIN-003 | In progress |
 | 3 | Doctor and specialty management | FR-DOCTOR-001 through FR-DOCTOR-005; FR-SPECIALTY-001 through FR-SPECIALTY-004 | In progress |
-| 4 | Patient profiles and medical reports | FR-PATIENT-001 through FR-PATIENT-005 | Pending |
-| 5 | Doctor schedules | FR-SCHEDULE-001 through FR-SCHEDULE-004 | Pending |
-| 6 | Appointment lifecycle | FR-APPOINTMENT-001 through FR-APPOINTMENT-007 | Pending |
+| 4 | Patient profiles and medical reports | FR-PATIENT-001 through FR-PATIENT-005 | In progress |
+| 5 | Doctor schedules | FR-SCHEDULE-001 through FR-SCHEDULE-004 | In progress |
+| 6 | Appointment lifecycle | FR-APPOINTMENT-001 through FR-APPOINTMENT-007 | In progress |
 | 7 | Stripe payments and invoicing | FR-PAYMENT-001 through FR-PAYMENT-007 | Pending |
 | 8 | Prescriptions | FR-PRESCRIPTION-001 through FR-PRESCRIPTION-007 | Pending |
 | 9 | Reviews and ratings | FR-REVIEW-001 through FR-REVIEW-007 | Pending |
@@ -212,3 +212,6 @@ Last updated: 2026-08-24
 | 2026-08-24 | Architecture | Restructured Auth, Admin, and Health into feature-owned modules; added shared constants/validation/rate-limit boundaries, multi-file Prisma schemas, structured test directories, seed entry point, and a permanent architecture convention. |
 | 2026-08-24 | Architecture | Aligned the source root with the provided reference: application folders now live under `src/app`, `lib` contains Prisma, domain code uses `src/app/module`, and legacy empty folders were removed. |
 | 2026-08-24 | 3 | Doctor/Specialty schemas and modules implemented with CRUD, ownership, assignment, discovery, soft deletion, cache, audit, notifications, documentation, and validation tests. Live-database and later-model dependency acceptance checks remain. |
+| 2026-08-24 | 4 | Patient/health/report schemas, profile and health APIs, private S3-compatible report storage, signed access, upload security, retention metadata, 90-day account-deletion cleanup, auditing, documentation, and contract tests implemented. Phase 6 now supplies assigned-doctor reads and appointment aggregates; live S3/database checks, enterprise AV integration, and review aggregates remain integration gates. |
+| 2026-08-24 | 5 | Schedule/DoctorSchedule schema and module implemented with timezone-aware validation, atomic bulk creation, transaction-serialized overlap protection, public availability, booked-slot privacy, ownership, soft deletion, cache invalidation, audit events, documentation, and focused tests. Live-database and Phase 6 booked-appointment acceptance checks remain. |
+| 2026-08-24 | 6 | Appointment/payment-shell schemas and module implemented with row/advisory locks, atomic booking, limits, role-scoped lists/detail, assigned-doctor privacy, transition/cancellation/refund policies, signed video windows, lifecycle cleanup, analytics, notifications, audits, documentation, and focused tests. Live-database concurrency and Phase 7 Stripe acceptance checks remain. |

@@ -23,8 +23,10 @@ model Doctor {
   isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  specialties DoctorSpecialty[]
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties  DoctorSpecialty[]
+  schedules    DoctorSchedule[]
+  appointments Appointment[]
 
   @@index([isDeleted], name: "idx_doctor_isDeleted")
   @@index([gender], name: "idx_doctor_gender")
