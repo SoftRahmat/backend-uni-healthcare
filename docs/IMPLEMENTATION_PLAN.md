@@ -31,7 +31,7 @@ Last updated: 2026-08-24
 | 4 | Patient profiles and medical reports | FR-PATIENT-001 through FR-PATIENT-005 | In progress |
 | 5 | Doctor schedules | FR-SCHEDULE-001 through FR-SCHEDULE-004 | In progress |
 | 6 | Appointment lifecycle | FR-APPOINTMENT-001 through FR-APPOINTMENT-007 | In progress |
-| 7 | Stripe payments and invoicing | FR-PAYMENT-001 through FR-PAYMENT-007 | Pending |
+| 7 | Stripe payments and invoicing | FR-PAYMENT-001 through FR-PAYMENT-007 | In progress |
 | 8 | Prescriptions | FR-PRESCRIPTION-001 through FR-PRESCRIPTION-007 | Pending |
 | 9 | Reviews and ratings | FR-REVIEW-001 through FR-REVIEW-007 | Pending |
 | 10 | Production hardening and release | All NFR-PERF, NFR-SEC, NFR-REL, NFR-MAIN, NFR-USE, and NFR-COMP requirements | Pending |
@@ -215,3 +215,4 @@ Last updated: 2026-08-24
 | 2026-08-24 | 4 | Patient/health/report schemas, profile and health APIs, private S3-compatible report storage, signed access, upload security, retention metadata, 90-day account-deletion cleanup, auditing, documentation, and contract tests implemented. Phase 6 now supplies assigned-doctor reads and appointment aggregates; live S3/database checks, enterprise AV integration, and review aggregates remain integration gates. |
 | 2026-08-24 | 5 | Schedule/DoctorSchedule schema and module implemented with timezone-aware validation, atomic bulk creation, transaction-serialized overlap protection, public availability, booked-slot privacy, ownership, soft deletion, cache invalidation, audit events, documentation, and focused tests. Live-database and Phase 6 booked-appointment acceptance checks remain. |
 | 2026-08-24 | 6 | Appointment/payment-shell schemas and module implemented with row/advisory locks, atomic booking, limits, role-scoped lists/detail, assigned-doctor privacy, transition/cancellation/refund policies, signed video windows, lifecycle cleanup, analytics, notifications, audits, documentation, and focused tests. Live-database concurrency and Phase 7 Stripe acceptance checks remain. |
+| 2026-08-24 | 7 | Stripe Checkout, minor-unit/tax handling, retry idempotency, raw-body signed webhooks, event replay persistence, appointment reconciliation, provider refunds, masked payment views, history/exports, admin analytics/actions, private versioned PDF invoices, migration, documentation, and focused tests implemented. Live Stripe test-mode fixtures and production-like S3/database acceptance checks remain. |

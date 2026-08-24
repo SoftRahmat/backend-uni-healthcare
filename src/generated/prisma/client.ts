@@ -122,6 +122,26 @@ export type MedicalReport = Prisma.MedicalReportModel
  */
 export type Payment = Prisma.PaymentModel
 /**
+ * Model PaymentAttempt
+ * 
+ */
+export type PaymentAttempt = Prisma.PaymentAttemptModel
+/**
+ * Model Refund
+ * 
+ */
+export type Refund = Prisma.RefundModel
+/**
+ * Model StripeWebhookEvent
+ * 
+ */
+export type StripeWebhookEvent = Prisma.StripeWebhookEventModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
  * Model Schedule
  * 
  */

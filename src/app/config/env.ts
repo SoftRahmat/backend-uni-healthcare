@@ -34,6 +34,16 @@ const environmentSchema = z.object({
   VIRUS_SCAN_URL: z.url().optional(),
   VIRUS_SCAN_API_KEY: z.string().min(1).optional(),
   SCHEDULE_TIME_ZONE: z.string().min(1).default("UTC"),
+  STRIPE_SECRET_KEY: z.string().min(1).optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+  STRIPE_CURRENCY: z.string().length(3).default("usd").transform((value) => value.toLowerCase()),
+  PAYMENT_SUCCESS_URL: z.url().default("http://localhost:3000/payments/success?session_id={CHECKOUT_SESSION_ID}"),
+  PAYMENT_CANCEL_URL: z.url().default("http://localhost:3000/payments/cancelled"),
+  INVOICE_COMPANY_NAME: z.string().min(1).default("PH HealthCare"),
+  INVOICE_COMPANY_ADDRESS: z.string().min(1).default("Healthcare Services"),
+  INVOICE_TAX_ID: z.string().default(""),
+  INVOICE_TAX_RATE_BPS: z.coerce.number().int().min(0).max(10_000).default(0),
+  INVOICE_CURRENCY_SYMBOL: z.string().min(1).max(5).default("$"),
 }).superRefine((value, context) => {
   if (Boolean(value.S3_ACCESS_KEY_ID) !== Boolean(value.S3_SECRET_ACCESS_KEY)) {
     context.addIssue({
@@ -49,6 +59,13 @@ const environmentSchema = z.object({
       code: "custom",
       path: ["SCHEDULE_TIME_ZONE"],
       message: "Schedule timezone must be a valid IANA timezone",
+    });
+  }
+  if (value.NODE_ENV === "production" && (!value.STRIPE_SECRET_KEY || !value.STRIPE_WEBHOOK_SECRET)) {
+    context.addIssue({
+      code: "custom",
+      path: ["STRIPE_SECRET_KEY"],
+      message: "Stripe secret and webhook signing secret are required in production",
     });
   }
 });

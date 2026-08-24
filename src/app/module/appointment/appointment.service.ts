@@ -10,7 +10,7 @@ import type { ApplicationRole } from "../../shared/constants/roles.js";
 import { addIsoDays } from "../schedule/schedule.validation.js";
 import { AppointmentEmailService } from "./appointment-email.service.js";
 import {
-  DeferredStripePaymentGateway,
+  StripeCheckoutPaymentGateway,
   type AppointmentPaymentGateway,
 } from "./appointment-payment.service.js";
 import { appointmentWindow, hoursUntil } from "./appointment-time.service.js";
@@ -136,7 +136,7 @@ const patientScheduleWhere = (
 
 export class AppointmentService {
   constructor(
-    private readonly payments: AppointmentPaymentGateway = new DeferredStripePaymentGateway(),
+    private readonly payments: AppointmentPaymentGateway = new StripeCheckoutPaymentGateway(),
     private readonly videos = new AppointmentVideoService(),
     private readonly emails = new AppointmentEmailService(),
   ) {}
@@ -219,8 +219,9 @@ export class AppointmentService {
         throw new ApiError(409, "Patient already has an overlapping appointment", "PATIENT_DOUBLE_BOOKING");
       }
 
-      const pending = this.payments.pending({
-        paymentId, appointmentId, amount: doctor.appointmentFee, patientId: patient.id, now,
+      const pending = await this.payments.pending({
+        paymentId, appointmentId, amount: doctor.appointmentFee, patientId: patient.id,
+        patientEmail: patient.email, doctorId: doctor.id, now,
       });
       const appointment = await transaction.appointment.create({
         data: {
@@ -229,6 +230,10 @@ export class AppointmentService {
           payment: { create: {
             id: pending.id, amount: pending.amount, currency: pending.currency,
             status: pending.status, paymentLink: pending.paymentLink, expiresAt: pending.expiresAt,
+            stripeCheckoutSessionId: pending.stripeCheckoutSessionId,
+            stripePaymentIntentId: pending.stripePaymentIntentId,
+            taxRateBps: pending.taxRateBps ?? 0, taxAmount: pending.taxAmount ?? 0,
+            attempts: { create: { status: "PENDING", amount: pending.amount + (pending.taxAmount ?? 0), providerAttemptId: pending.stripeCheckoutSessionId } },
           } },
         },
         include: appointmentInclude,
@@ -238,18 +243,22 @@ export class AppointmentService {
         action: "APPOINTMENT_BOOKED", userId: patient.userId, ...context,
         metadata: { actorUserId: actor.userId, appointmentId, patientId: patient.id, doctorId: doctor.id, scheduleId: schedule.id, emergency: input.emergency },
       } });
-      return appointment;
+      await transaction.auditLog.create({ data: {
+        action: "PAYMENT_INITIATED", userId: patient.userId, ...context,
+        metadata: { actorUserId: actor.userId, appointmentId, paymentId, amount: pending.amount, checkoutSessionId: pending.stripeCheckoutSessionId },
+      } });
+      return { appointment, paymentInitiation: { checkoutUrl: pending.paymentLink, clientSecret: pending.clientSecret ?? null } };
     });
-    invalidate(result);
+    invalidate(result.appointment);
     await this.emails.sendBooked({
-      patientEmail: result.patient.email, doctorEmail: result.doctor.email,
-      date: dateString(result.schedule.scheduleDate), time: result.schedule.startTime,
-      paymentLink: result.payment!.paymentLink!,
+      patientEmail: result.appointment.patient.email, doctorEmail: result.appointment.doctor.email,
+      date: dateString(result.appointment.schedule.scheduleDate), time: result.appointment.schedule.startTime,
+      paymentLink: result.appointment.payment!.paymentLink!,
     });
     return {
-      appointment: listView(result, "PATIENT"),
-      payment: result.payment,
-      schedule: listView(result, "PATIENT").schedule,
+      appointment: listView(result.appointment, "PATIENT"),
+      payment: { ...result.appointment.payment, ...result.paymentInitiation },
+      schedule: listView(result.appointment, "PATIENT").schedule,
     };
   }
 
@@ -363,6 +372,12 @@ export class AppointmentService {
     const { startsAt } = appointmentWindow(appointment.schedule);
     const policy = calculateCancellation(actor.role, hoursUntil(startsAt, now), appointment.payment?.amount ?? appointment.appointmentFee, appointment.payment?.status ?? "PENDING");
 
+    const providerRefund = appointment.payment && policy.refundAmount > 0
+      ? await this.payments.refund({
+        paymentId: appointment.payment.id, appointmentId,
+        stripePaymentIntentId: appointment.payment.stripePaymentIntentId,
+        amount: policy.refundAmount, reason: input.reason,
+      }) : null;
     const cancelled = await prisma.$transaction(async (transaction) => {
       await transaction.$queryRaw`SELECT "id" FROM "appointments" WHERE "id" = ${appointmentId} FOR UPDATE`;
       const current = await transaction.appointment.findUniqueOrThrow({ where: { id: appointmentId } });
@@ -376,7 +391,11 @@ export class AppointmentService {
       if (appointment.payment) await transaction.payment.update({ where: { id: appointment.payment.id }, data: {
         status: policy.nextPaymentStatus,
         refundAmount: policy.refundAmount,
-        ...(policy.refundAmount > 0 ? { refundedAt: now } : {}),
+        ...(policy.refundAmount > 0 ? { refundedAt: now, stripeRefundId: providerRefund?.providerRefundId } : {}),
+      } });
+      if (appointment.payment && providerRefund) await transaction.refund.create({ data: {
+        paymentId: appointment.payment.id, stripeRefundId: providerRefund.providerRefundId,
+        amount: policy.refundAmount, reason: input.reason, status: providerRefund.status,
       } });
       await transaction.auditLog.create({ data: { action: "APPOINTMENT_CANCELLED", userId: actor.userId, ...context, metadata: {
         actorUserId: actor.userId, actorRole: actor.role, appointmentId, reason: input.reason,

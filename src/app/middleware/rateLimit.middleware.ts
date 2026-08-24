@@ -13,6 +13,7 @@ export const apiRateLimiter = rateLimit({
   limit: env.RATE_LIMIT_MAX,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  skip: (request) => request.path === "/payments/webhooks/stripe",
   handler: handler("Too many requests", "RATE_LIMIT_EXCEEDED"),
 });
 

@@ -1,5 +1,5 @@
 import cors from "cors";
-import express, { type Application } from "express";
+import express, { type Application, type Request } from "express";
 import helmet from "helmet";
 
 import { env } from "./app/config/env.js";
@@ -39,7 +39,12 @@ export const createApp = (): Application => {
   app.use(requestLogger);
   app.use(helmet());
   app.use(createCorsMiddleware());
-  app.use(express.json({ limit: env.REQUEST_BODY_LIMIT }));
+  app.use(express.json({
+    limit: env.REQUEST_BODY_LIMIT,
+    verify(request, _response, buffer) {
+      (request as Request).rawBody = Buffer.from(buffer);
+    },
+  }));
   app.use(express.urlencoded({ extended: true, limit: env.REQUEST_BODY_LIMIT }));
 
   app.get("/", (_request, response) => {

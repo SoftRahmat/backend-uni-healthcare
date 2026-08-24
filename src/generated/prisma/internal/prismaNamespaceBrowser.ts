@@ -67,6 +67,10 @@ export const ModelName = {
   PatientHealthData: 'PatientHealthData',
   MedicalReport: 'MedicalReport',
   Payment: 'Payment',
+  PaymentAttempt: 'PaymentAttempt',
+  Refund: 'Refund',
+  StripeWebhookEvent: 'StripeWebhookEvent',
+  Invoice: 'Invoice',
   Schedule: 'Schedule',
   DoctorSchedule: 'DoctorSchedule',
   Specialty: 'Specialty'
@@ -355,12 +359,20 @@ export const PaymentScalarFieldEnum = {
   currency: 'currency',
   status: 'status',
   paymentLink: 'paymentLink',
+  stripePaymentIntentId: 'stripePaymentIntentId',
+  stripeCheckoutSessionId: 'stripeCheckoutSessionId',
   expiresAt: 'expiresAt',
   transactionId: 'transactionId',
   paidAt: 'paidAt',
   refundAmount: 'refundAmount',
   refundedAt: 'refundedAt',
   stripeRefundId: 'stripeRefundId',
+  paymentMethod: 'paymentMethod',
+  cardLast4: 'cardLast4',
+  retryCount: 'retryCount',
+  taxRateBps: 'taxRateBps',
+  taxAmount: 'taxAmount',
+  notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   isDeleted: 'isDeleted',
@@ -368,6 +380,69 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const PaymentAttemptScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  providerAttemptId: 'providerAttemptId',
+  status: 'status',
+  amount: 'amount',
+  failureCode: 'failureCode',
+  failureMessage: 'failureMessage',
+  createdAt: 'createdAt'
+} as const
+
+export type PaymentAttemptScalarFieldEnum = (typeof PaymentAttemptScalarFieldEnum)[keyof typeof PaymentAttemptScalarFieldEnum]
+
+
+export const RefundScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  stripeRefundId: 'stripeRefundId',
+  amount: 'amount',
+  reason: 'reason',
+  status: 'status',
+  estimatedArrival: 'estimatedArrival',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RefundScalarFieldEnum = (typeof RefundScalarFieldEnum)[keyof typeof RefundScalarFieldEnum]
+
+
+export const StripeWebhookEventScalarFieldEnum = {
+  id: 'id',
+  stripeEventId: 'stripeEventId',
+  eventType: 'eventType',
+  status: 'status',
+  payload: 'payload',
+  errorMessage: 'errorMessage',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type StripeWebhookEventScalarFieldEnum = (typeof StripeWebhookEventScalarFieldEnum)[keyof typeof StripeWebhookEventScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  invoiceNumber: 'invoiceNumber',
+  version: 'version',
+  objectKey: 'objectKey',
+  fileUrl: 'fileUrl',
+  checksum: 'checksum',
+  subtotal: 'subtotal',
+  taxRateBps: 'taxRateBps',
+  taxAmount: 'taxAmount',
+  totalAmount: 'totalAmount',
+  retentionUntil: 'retentionUntil',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
 export const ScheduleScalarFieldEnum = {
@@ -423,6 +498,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

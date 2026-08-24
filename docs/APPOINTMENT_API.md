@@ -32,7 +32,7 @@ Booking locks the patient and schedule, then validates ownership, patient health
 
 Appointment creation, the immutable doctor-fee snapshot, pending payment, and `Schedule.isBooked=true` are one transaction. A PostgreSQL partial unique index permits only one active (`SCHEDULED` or `INPROGRESS`) appointment per schedule, providing a second concurrency boundary.
 
-The Phase 6 payment adapter derives the amount exclusively from `Doctor.appointmentFee`, creates a 30-minute pending record, and returns an application payment link. Phase 7 will replace this adapter with Stripe Payment Intents, Checkout, webhooks, and real refund calls without changing the appointment transaction contract.
+The payment adapter derives the amount exclusively from `Doctor.appointmentFee`, creates a 30-minute pending record, and returns a Stripe hosted Checkout URL when Stripe is configured. Phase 7 webhook reconciliation, retries, refunds, and invoices are documented in `docs/PAYMENT_API.md`.
 
 ## Lifecycle
 
@@ -59,7 +59,7 @@ SCHEDULED -> CANCELLED
 | Admin, 12–24 hours | Yes | 50% partial refund |
 | Admin, under 12 hours | Yes | No refund |
 
-Cancellation records the actor, role, reason, timestamp, refund type/amount, updates payment state, and releases the schedule in one transaction. Actual Stripe refund execution is the Phase 7 adapter responsibility.
+Cancellation records the actor, role, reason, timestamp, refund type/amount, executes an idempotent provider refund for eligible paid appointments, updates payment/refund state, and releases the schedule.
 
 ## Privacy and video access
 

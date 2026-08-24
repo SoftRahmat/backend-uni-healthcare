@@ -6,12 +6,20 @@ model Payment {
   currency       String        @default("USD") @db.Char(3)
   status         PaymentStatus @default(PENDING)
   paymentLink    String?       @db.VarChar(2048)
+  stripePaymentIntentId String? @unique @db.VarChar(255)
+  stripeCheckoutSessionId String? @unique @db.VarChar(255)
   expiresAt      DateTime
   transactionId  String?       @unique @db.VarChar(255)
   paidAt         DateTime?
   refundAmount   Int           @default(0)
   refundedAt     DateTime?
   stripeRefundId String?       @unique @db.VarChar(255)
+  paymentMethod  String?       @db.VarChar(50)
+  cardLast4      String?       @db.Char(4)
+  retryCount     Int           @default(0)
+  taxRateBps     Int           @default(0)
+  taxAmount      Int           @default(0)
+  notes          String?       @db.VarChar(1000)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -19,8 +27,75 @@ model Payment {
   deletedAt DateTime?
 
   appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  attempts    PaymentAttempt[]
+  refunds     Refund[]
+  invoices    Invoice[]
 
   @@index([status, createdAt], name: "idx_payment_status_created")
   @@index([expiresAt], name: "idx_payment_expiresAt")
   @@map("payments")
+}
+
+model PaymentAttempt {
+  id String @id @default(uuid(7))
+  paymentId         String
+  providerAttemptId String?       @db.VarChar(255)
+  status            PaymentStatus
+  amount            Int
+  failureCode       String?       @db.VarChar(100)
+  failureMessage    String?       @db.VarChar(1000)
+  createdAt         DateTime      @default(now())
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  @@index([paymentId, createdAt(sort: Desc)], name: "idx_payment_attempt_payment_created")
+  @@map("payment_attempts")
+}
+
+model Refund {
+  id String @id @default(uuid(7))
+  paymentId        String
+  stripeRefundId   String   @unique @db.VarChar(255)
+  amount           Int
+  reason           String?  @db.VarChar(500)
+  status           String   @db.VarChar(50)
+  estimatedArrival DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  @@index([paymentId, createdAt(sort: Desc)], name: "idx_refund_payment_created")
+  @@map("refunds")
+}
+
+model StripeWebhookEvent {
+  id String @id @default(uuid(7))
+  stripeEventId String                  @unique @db.VarChar(255)
+  eventType     String                  @db.VarChar(150)
+  status        WebhookProcessingStatus @default(PROCESSING)
+  payload       Json
+  errorMessage  String?                 @db.VarChar(1000)
+  processedAt   DateTime?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  @@index([eventType, createdAt], name: "idx_stripe_webhook_type_created")
+  @@index([status, createdAt], name: "idx_stripe_webhook_status_created")
+  @@map("stripe_webhook_events")
+}
+
+model Invoice {
+  id String @id @default(uuid(7))
+  paymentId       String
+  invoiceNumber   String   @unique @db.VarChar(100)
+  version         Int      @default(1)
+  objectKey       String   @unique @db.VarChar(1024)
+  fileUrl         String   @db.VarChar(2048)
+  checksum        String   @db.Char(64)
+  subtotal        Int
+  taxRateBps      Int
+  taxAmount       Int
+  totalAmount     Int
+  retentionUntil DateTime
+  createdAt       DateTime @default(now())
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  @@unique([paymentId, version], name: "invoice_payment_version_key")
+  @@index([paymentId, createdAt(sort: Desc)], name: "idx_invoice_payment_created")
+  @@map("invoices")
 }
