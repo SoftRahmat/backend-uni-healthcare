@@ -1,0 +1,47 @@
+model Doctor {
+  id String @id @default(uuid(7))
+
+  userId              String  @unique
+  name                String  @db.VarChar(100)
+  email               String  @unique @db.VarChar(320)
+  contactNumber       String  @db.VarChar(30)
+  address             String? @db.VarChar(500)
+  registrationNumber  String  @unique @db.VarChar(100)
+  experience          Int
+  gender              Gender
+  appointmentFee      Int
+  qualification       String  @db.VarChar(200)
+  currentWorkingPlace String  @db.VarChar(200)
+  designation         String  @db.VarChar(100)
+  bio                 String? @db.VarChar(1000)
+  profilePhoto        String? @db.VarChar(2048)
+  averageRating       Float   @default(0)
+  totalReviews        Int     @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specialties DoctorSpecialty[]
+
+  @@index([isDeleted], name: "idx_doctor_isDeleted")
+  @@index([gender], name: "idx_doctor_gender")
+  @@index([appointmentFee], name: "idx_doctor_fee")
+  @@index([averageRating], name: "idx_doctor_rating")
+  @@map("doctors")
+}
+
+model DoctorSpecialty {
+  doctorId    String
+  specialtyId String
+  assignedAt  DateTime @default(now())
+
+  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  specialty Specialty @relation(fields: [specialtyId], references: [id], onDelete: Restrict)
+
+  @@id([doctorId, specialtyId])
+  @@index([specialtyId], name: "idx_doctor_specialty_specialtyId")
+  @@map("doctor_specialties")
+}

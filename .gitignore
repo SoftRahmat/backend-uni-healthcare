@@ -1,6 +1,11 @@
 node_modules
+.pnpm-store/
 .env
 .env.*
 !.env.example
 dist
 /generated/prisma
+docs/PH-HealthCare-Backend-Project-Requirements.md
+PH-HealthCare_Backend_-_Project_Requirements_Document.pdf
+uploads/*
+!uploads/.gitkeep

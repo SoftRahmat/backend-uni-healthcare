@@ -1,15 +1,76 @@
-import app from "./app";
-const port = 5000; // The port your express server will be running on.
+import { createServer } from "node:http";
 
+import app from "./app.js";
+import { env } from "./app/config/env.js";
+import { logger } from "./app/config/logger.js";
+import { prisma } from "./app/lib/prisma.js";
+import { cleanupExpiredAuthRecords } from "./app/module/auth/auth-cleanup.service.js";
 
-const bootsrap = () => {
-    try {
-        app.listen(process.env.PORT || port, () => {
-            console.log(`Server is running on http://localhost:${port}`);
-        });
-    } catch (error) {
-        console.error("Error during server initialization:", error);
-    }
+const server = createServer(app);
+let isShuttingDown = false;
+const authCleanupInterval = setInterval(() => {
+  void cleanupExpiredAuthRecords().catch((error: unknown) => {
+    logger.error("Authentication cleanup failed", { error });
+  });
+}, 24 * 60 * 60 * 1_000);
+authCleanupInterval.unref();
+
+const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+
+  logger.info("Graceful shutdown started", { signal });
+  const forceShutdown = setTimeout(() => {
+    logger.error("Graceful shutdown timed out", { signal });
+    process.exit(1);
+  }, env.SHUTDOWN_TIMEOUT_MS);
+  forceShutdown.unref();
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => (error ? reject(error) : resolve()));
+    });
+    await prisma.$disconnect();
+    clearInterval(authCleanupInterval);
+    clearTimeout(forceShutdown);
+    logger.info("Graceful shutdown completed", { signal });
+    process.exit(0);
+  } catch (error) {
+    logger.error("Graceful shutdown failed", { error, signal });
+    process.exit(1);
+  }
+};
+
+const bootstrap = async (): Promise<void> => {
+  await prisma.$connect();
+  await cleanupExpiredAuthRecords();
+  server.listen(env.PORT, env.HOST, () => {
+    logger.info("Server started", {
+      host: env.HOST,
+      port: env.PORT,
+      environment: env.NODE_ENV,
+    });
+  });
+};
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.on(signal, () => {
+    void shutdown(signal);
+  });
 }
 
-bootsrap();
+process.on("unhandledRejection", (error) => {
+  logger.error("Unhandled promise rejection", { error });
+});
+
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught exception", { error });
+  void shutdown("SIGTERM");
+});
+
+bootstrap().catch((error: unknown) => {
+  logger.error("Server initialization failed", { error });
+  process.exit(1);
+});

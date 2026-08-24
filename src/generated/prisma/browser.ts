@@ -18,6 +18,66 @@ export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
 /**
+ * Model Admin
+ * 
+ */
+export type Admin = Prisma.AdminModel
+/**
+ * Model User
+ * 
+ */
+export type User = Prisma.UserModel
+/**
+ * Model Session
+ * 
+ */
+export type Session = Prisma.SessionModel
+/**
+ * Model Account
+ * 
+ */
+export type Account = Prisma.AccountModel
+/**
+ * Model Verification
+ * 
+ */
+export type Verification = Prisma.VerificationModel
+/**
+ * Model AuthToken
+ * 
+ */
+export type AuthToken = Prisma.AuthTokenModel
+/**
+ * Model PasswordHistory
+ * 
+ */
+export type PasswordHistory = Prisma.PasswordHistoryModel
+/**
+ * Model LoginAttempt
+ * 
+ */
+export type LoginAttempt = Prisma.LoginAttemptModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model Doctor
+ * 
+ */
+export type Doctor = Prisma.DoctorModel
+/**
+ * Model DoctorSpecialty
+ * 
+ */
+export type DoctorSpecialty = Prisma.DoctorSpecialtyModel
+/**
+ * Model Patient
+ * 
+ */
+export type Patient = Prisma.PatientModel
+/**
  * Model Specialty
  * 
  */

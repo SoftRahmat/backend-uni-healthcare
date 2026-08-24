@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "module": "ESNext",                                
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "rootDir": "./src",
-    "outDir": "./dist",  
+    "outDir": "./dist",
     "target": "ES2023",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "sourceMap": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

@@ -8,5 +8,17 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Admin.js'
+export type * from './models/User.js'
+export type * from './models/Session.js'
+export type * from './models/Account.js'
+export type * from './models/Verification.js'
+export type * from './models/AuthToken.js'
+export type * from './models/PasswordHistory.js'
+export type * from './models/LoginAttempt.js'
+export type * from './models/AuditLog.js'
+export type * from './models/Doctor.js'
+export type * from './models/DoctorSpecialty.js'
+export type * from './models/Patient.js'
 export type * from './models/Specialty.js'
 export type * from './commonInputTypes.js'

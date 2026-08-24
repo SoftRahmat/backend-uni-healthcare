@@ -9,7 +9,68 @@
 * 🟢 You can import this file directly.
 */
 
+export const UserRole = {
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  DOCTOR: 'DOCTOR',
+  PATIENT: 'PATIENT'
+} as const
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const UserStatus = {
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  BLOCKED: 'BLOCKED',
+  DELETED: 'DELETED'
+} as const
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
+
+
+export const AuthTokenType = {
+  EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
+  PASSWORD_RESET: 'PASSWORD_RESET'
+} as const
+
+export type AuthTokenType = (typeof AuthTokenType)[keyof typeof AuthTokenType]
+
+
+export const Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  OTHER: 'OTHER'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const AuditAction = {
+  USER_REGISTERED: 'USER_REGISTERED',
+  EMAIL_VERIFIED: 'EMAIL_VERIFIED',
+  VERIFICATION_EMAIL_RESENT: 'VERIFICATION_EMAIL_RESENT',
+  LOGIN_SUCCEEDED: 'LOGIN_SUCCEEDED',
+  LOGIN_FAILED: 'LOGIN_FAILED',
+  ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+  PASSWORD_RESET_REQUESTED: 'PASSWORD_RESET_REQUESTED',
+  PASSWORD_RESET_COMPLETED: 'PASSWORD_RESET_COMPLETED',
+  PASSWORD_CHANGED: 'PASSWORD_CHANGED',
+  LOGOUT: 'LOGOUT',
+  LOGOUT_ALL: 'LOGOUT_ALL',
+  SESSION_REVOKED: 'SESSION_REVOKED',
+  SESSION_AUTO_REVOKED: 'SESSION_AUTO_REVOKED',
+  ADMIN_CREATED: 'ADMIN_CREATED',
+  ADMIN_PROFILE_UPDATED: 'ADMIN_PROFILE_UPDATED',
+  ADMIN_ROLE_CHANGED: 'ADMIN_ROLE_CHANGED',
+  ADMIN_STATUS_CHANGED: 'ADMIN_STATUS_CHANGED',
+  ADMIN_LIST_VIEWED: 'ADMIN_LIST_VIEWED',
+  DOCTOR_CREATED: 'DOCTOR_CREATED',
+  DOCTOR_PROFILE_UPDATED: 'DOCTOR_PROFILE_UPDATED',
+  DOCTOR_DELETED: 'DOCTOR_DELETED',
+  SPECIALTY_CREATED: 'SPECIALTY_CREATED',
+  SPECIALTY_UPDATED: 'SPECIALTY_UPDATED',
+  SPECIALTY_DELETED: 'SPECIALTY_DELETED'
+} as const
+
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
