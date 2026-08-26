@@ -11,7 +11,7 @@ const environmentSchema = z
     DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     CORS_ORIGINS: z
       .string()
-      .default("http://localhost:3000")
+      .default("http://localhost:4200,http://127.0.0.1:4200")
       .transform((value) =>
         value
           .split(",")
@@ -37,10 +37,14 @@ const environmentSchema = z
       .transform((value) => value === "true"),
     SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
     APP_BASE_URL: z.url().default("http://localhost:5000"),
-    CLIENT_BASE_URL: z.url().default("http://localhost:3000"),
+    CLIENT_BASE_URL: z.url().default("http://localhost:4200"),
     BETTER_AUTH_SECRET: z.string().min(32),
     JWT_SECRET: z.string().min(32),
     BCRYPT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
+    ALLOW_DEV_EMAIL_VERIFICATION_BYPASS: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
     EMAIL_FROM: z.email().default("no-reply@ph-healthcare.local"),
     S3_REGION: z.string().min(1).default("us-east-1"),
     S3_BUCKET: z.string().min(3).default("ph-healthcare-private"),
@@ -74,6 +78,13 @@ const environmentSchema = z
     INVOICE_CURRENCY_SYMBOL: z.string().min(1).max(5).default("$"),
   })
   .superRefine((value, context) => {
+    if (value.ALLOW_DEV_EMAIL_VERIFICATION_BYPASS && value.NODE_ENV !== "development") {
+      context.addIssue({
+        code: "custom",
+        path: ["ALLOW_DEV_EMAIL_VERIFICATION_BYPASS"],
+        message: "Email verification bypass is allowed only in development",
+      });
+    }
     if (Boolean(value.S3_ACCESS_KEY_ID) !== Boolean(value.S3_SECRET_ACCESS_KEY)) {
       context.addIssue({
         code: "custom",

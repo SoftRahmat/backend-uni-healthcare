@@ -7,6 +7,7 @@ import { createOpaqueToken, hashOpaqueToken, signAccessToken } from "../../utils
 import { hashPassword, isPasswordReused, verifyPassword } from "../../utils/password.js";
 import { AuthEmailService } from "./auth-email.service.js";
 import type { RequestContext } from "../../interfaces/index.js";
+import { env } from "../../config/env.js";
 
 const DAY_MS = 24 * 60 * 60 * 1_000;
 const HOUR_MS = 60 * 60 * 1_000;
@@ -146,6 +147,34 @@ export class AuthService {
     });
 
     return publicUser(user);
+  }
+
+  async verifyEmailInDevelopment(emailInput: string, context: RequestContext): Promise<void> {
+    if (env.NODE_ENV !== "development" || !env.ALLOW_DEV_EMAIL_VERIFICATION_BYPASS) {
+      throw new ApiError(404, "Route was not found", "ROUTE_NOT_FOUND");
+    }
+    const email = normalizeEmail(emailInput);
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || user.deletedAt || user.status === "DELETED" || user.status === "BLOCKED") return;
+    if (user.emailVerified && user.status === "ACTIVE") return;
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true, status: "ACTIVE" },
+      }),
+      prisma.authToken.deleteMany({
+        where: { userId: user.id, type: "EMAIL_VERIFICATION" },
+      }),
+      prisma.auditLog.create({
+        data: {
+          action: "EMAIL_VERIFIED",
+          userId: user.id,
+          ipAddress: context.ipAddress,
+          userAgent: context.userAgent,
+          metadata: { developmentBypass: true },
+        },
+      }),
+    ]);
   }
 
   async resendVerification(emailInput: string, context: RequestContext): Promise<void> {

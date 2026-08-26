@@ -40,6 +40,12 @@ export const verifyEmail = asyncHandler(async (request, response) => {
   response.status(200).json(successResponse("Email verified successfully", user));
 });
 
+export const verifyEmailInDevelopment = asyncHandler(async (request, response) => {
+  const { email } = emailSchema.parse(request.body);
+  await authService.verifyEmailInDevelopment(email, contextFrom(request));
+  response.status(200).json(successResponse("Development email verification completed", null));
+});
+
 export const resendVerification = asyncHandler(async (request, response) => {
   const { email } = emailSchema.parse(request.body);
   await authService.resendVerification(email, contextFrom(request));

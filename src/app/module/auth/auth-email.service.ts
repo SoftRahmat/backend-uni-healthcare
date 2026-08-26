@@ -6,7 +6,7 @@ export class AuthEmailService {
   constructor(private readonly transport: EmailService = emailService) {}
 
   async sendVerification(email: string, token: string): Promise<void> {
-    const url = `${env.CLIENT_BASE_URL}/verify-email?token=${encodeURIComponent(token)}`;
+    const url = `${env.CLIENT_BASE_URL}/auth/verify-email?token=${encodeURIComponent(token)}`;
     await this.transport.send({
       to: email,
       subject: "Verify your PH-HealthCare email",
@@ -20,7 +20,7 @@ export class AuthEmailService {
   }
 
   async sendPasswordReset(email: string, token: string): Promise<void> {
-    const url = `${env.CLIENT_BASE_URL}/reset-password?token=${encodeURIComponent(token)}`;
+    const url = `${env.CLIENT_BASE_URL}/auth/reset-password?token=${encodeURIComponent(token)}`;
     await this.transport.send({
       to: email,
       subject: "Reset your PH-HealthCare password",

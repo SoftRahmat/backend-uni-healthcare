@@ -12,6 +12,7 @@ import {
   resetPassword,
   revokeSession,
   verifyEmail,
+  verifyEmailInDevelopment,
 } from "./auth.controller.js";
 import { authenticate } from "../../middleware/auth.middleware.js";
 import { authRateLimiter } from "../../middleware/rateLimit.middleware.js";
@@ -29,6 +30,12 @@ export const authRouter = Router();
 
 authRouter.post("/register", authRateLimiter, validate({ body: registerSchema }), register);
 authRouter.post("/verify-email", authRateLimiter, validate({ body: tokenSchema }), verifyEmail);
+authRouter.post(
+  "/dev/verify-email",
+  authRateLimiter,
+  validate({ body: emailSchema }),
+  verifyEmailInDevelopment,
+);
 authRouter.post(
   "/resend-verification",
   authRateLimiter,
