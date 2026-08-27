@@ -5,17 +5,21 @@ import type { RequestHandler } from "express";
 import { prisma } from "../lib/prisma.js";
 import { ApiError } from "../errorHelpers/ApiError.js";
 import { verifyAccessToken } from "../utils/auth-token.js";
+import { readAuthCookie } from "../module/auth/auth-cookie.js";
 
 export const authenticate: RequestHandler = async (request, _response, next) => {
   try {
     const authorization = request.header("authorization");
-    if (!authorization?.startsWith("Bearer ")) {
+    const token = authorization?.startsWith("Bearer ")
+      ? authorization.slice(7)
+      : readAuthCookie(request);
+    if (!token) {
       throw new ApiError(401, "Authentication is required", "AUTHENTICATION_REQUIRED");
     }
 
     let claims;
     try {
-      claims = await verifyAccessToken(authorization.slice(7));
+      claims = await verifyAccessToken(token);
     } catch {
       throw new ApiError(401, "Access token is invalid or expired", "INVALID_ACCESS_TOKEN");
     }
@@ -66,7 +70,7 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
 };
 
 export const optionalAuthenticate: RequestHandler = (request, response, next) => {
-  if (!request.header("authorization")) {
+  if (!request.header("authorization") && !readAuthCookie(request)) {
     next();
     return;
   }

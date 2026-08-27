@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { env } from "./app/config/env.js";
 import { ApiError } from "./app/errorHelpers/ApiError.js";
 import { errorHandler } from "./app/middleware/error.middleware.js";
+import { protectCookieAuthentication } from "./app/middleware/csrf.middleware.js";
 import { notFoundHandler } from "./app/middleware/notFound.middleware.js";
 import { apiRateLimiter } from "./app/middleware/rateLimit.middleware.js";
 import { requestId } from "./app/middleware/requestId.middleware.js";
@@ -39,6 +40,7 @@ export const createApp = (): Application => {
   app.use(requestLogger);
   app.use(helmet());
   app.use(createCorsMiddleware());
+  app.use(protectCookieAuthentication);
   app.use(
     express.json({
       limit: env.REQUEST_BODY_LIMIT,

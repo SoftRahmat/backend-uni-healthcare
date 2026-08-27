@@ -181,7 +181,31 @@ export const AuditAction = {
   REVIEW_DELETED: 'REVIEW_DELETED',
   REVIEW_RESPONSE_ADDED: 'REVIEW_RESPONSE_ADDED',
   REVIEW_FLAGGED: 'REVIEW_FLAGGED',
-  REVIEW_LIST_VIEWED: 'REVIEW_LIST_VIEWED'
+  REVIEW_LIST_VIEWED: 'REVIEW_LIST_VIEWED',
+  SUPPORT_TICKET_CREATED: 'SUPPORT_TICKET_CREATED'
 } as const
 
 export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
+export const SupportTicketCategory = {
+  ACCOUNT: 'ACCOUNT',
+  APPOINTMENT: 'APPOINTMENT',
+  PAYMENT: 'PAYMENT',
+  PRESCRIPTION: 'PRESCRIPTION',
+  PRIVACY: 'PRIVACY',
+  TECHNICAL: 'TECHNICAL',
+  OTHER: 'OTHER'
+} as const
+
+export type SupportTicketCategory = (typeof SupportTicketCategory)[keyof typeof SupportTicketCategory]
+
+
+export const SupportTicketStatus = {
+  OPEN: 'OPEN',
+  IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
+  CLOSED: 'CLOSED'
+} as const
+
+export type SupportTicketStatus = (typeof SupportTicketStatus)[keyof typeof SupportTicketStatus]

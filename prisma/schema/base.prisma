@@ -138,6 +138,7 @@ enum AuditAction {
   REVIEW_RESPONSE_ADDED
   REVIEW_FLAGGED
   REVIEW_LIST_VIEWED
+  SUPPORT_TICKET_CREATED
 }
 
 model User {
@@ -170,6 +171,7 @@ model User {
   passwordHistory PasswordHistory[]
   loginAttempts   LoginAttempt[]
   auditLogs       AuditLog[]
+  supportTickets  SupportTicket[]
 
   @@index([role, status], name: "idx_user_role_status")
   @@index([status], name: "idx_user_status")

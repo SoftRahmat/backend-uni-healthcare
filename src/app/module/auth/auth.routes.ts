@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   changePassword,
   forgotPassword,
+  getCurrentUser,
   listSessions,
   login,
   logout,
@@ -43,6 +44,7 @@ authRouter.post(
   resendVerification,
 );
 authRouter.post("/login", authRateLimiter, validate({ body: loginSchema }), login);
+authRouter.get("/me", authenticate, getCurrentUser);
 authRouter.post(
   "/forgot-password",
   authRateLimiter,

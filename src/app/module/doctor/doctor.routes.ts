@@ -7,6 +7,7 @@ import {
   createDoctor,
   deleteDoctor,
   getDoctor,
+  getOwnDoctorProfile,
   listDoctors,
   updateDoctor,
   updateOwnDoctorProfile,
@@ -27,6 +28,7 @@ doctorRouter.get(
   validate({ query: doctorListQuerySchema }),
   listDoctors,
 );
+doctorRouter.get("/me", authenticate, authorizeExact("DOCTOR"), getOwnDoctorProfile);
 doctorRouter.get(
   "/:doctorId",
   optionalAuthenticate,

@@ -100,6 +100,15 @@ export class AuthService {
     return publicUser(user);
   }
 
+  async currentUser(userId: string) {
+    const user = await prisma.user.findFirst({
+      where: { id: userId, deletedAt: null },
+      include: { patient: true },
+    });
+    if (!user) throw new ApiError(404, "Account was not found", "ACCOUNT_NOT_FOUND");
+    return { ...publicUser(user), patient: user.patient };
+  }
+
   async verifyEmail(rawToken: string, context: RequestContext) {
     const tokenHash = hashOpaqueToken(rawToken);
     const now = new Date();

@@ -13,6 +13,7 @@ import type { RequestContext } from "../../interfaces/index.js";
 import { ApiError } from "../../errorHelpers/ApiError.js";
 import { successResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { AUTH_COOKIE_NAME, authCookieClearOptions, authCookieOptions } from "./auth-cookie.js";
 
 const contextFrom = (request: Request): RequestContext => ({
   ipAddress: request.ip,
@@ -56,7 +57,14 @@ export const resendVerification = asyncHandler(async (request, response) => {
 
 export const login = asyncHandler(async (request, response) => {
   const result = await authService.login(loginSchema.parse(request.body), contextFrom(request));
+  response.cookie(AUTH_COOKIE_NAME, result.accessToken, authCookieOptions());
   response.status(200).json(successResponse("Login successful", result));
+});
+
+export const getCurrentUser = asyncHandler(async (request, response) => {
+  const auth = requireAuth(request);
+  const user = await authService.currentUser(auth.userId);
+  response.status(200).json(successResponse("Current user retrieved successfully", user));
 });
 
 export const forgotPassword = asyncHandler(async (request, response) => {
@@ -91,12 +99,14 @@ export const changePassword = asyncHandler(async (request, response) => {
 export const logout = asyncHandler(async (request, response) => {
   const auth = requireAuth(request);
   await authService.logout(auth.userId, auth.sessionId, contextFrom(request));
+  response.clearCookie(AUTH_COOKIE_NAME, authCookieClearOptions());
   response.status(200).json(successResponse("Logged out successfully", null));
 });
 
 export const logoutAll = asyncHandler(async (request, response) => {
   const auth = requireAuth(request);
   await authService.logoutAll(auth.userId, contextFrom(request));
+  response.clearCookie(AUTH_COOKIE_NAME, authCookieClearOptions());
   response.status(200).json(successResponse("Logged out from all sessions", null));
 });
 

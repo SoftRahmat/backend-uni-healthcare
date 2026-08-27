@@ -88,8 +88,11 @@ const invalidateScheduleCaches = (doctorId: string): void => {
   );
 };
 
-const lockDoctorSchedules = async (transaction: Prisma.TransactionClient, doctorId: string) => {
-  await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${doctorId}))`;
+export const lockDoctorSchedules = async (
+  transaction: Prisma.TransactionClient,
+  doctorId: string,
+) => {
+  await transaction.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${doctorId}))`;
 };
 
 export class ScheduleService {

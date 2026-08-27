@@ -12,6 +12,12 @@ describe("doctor and specialty route boundaries", () => {
     expect(specialty.body.error.code).toBe("AUTHENTICATION_REQUIRED");
   });
 
+  it("protects the authenticated doctor's own-profile endpoint", async () => {
+    const response = await request(app).get("/api/v1/doctors/me").expect(401);
+
+    expect(response.body.error.code).toBe("AUTHENTICATION_REQUIRED");
+  });
+
   it("validates public catalog queries before database access", async () => {
     const doctors = await request(app).get("/api/v1/doctors?limit=51").expect(400);
     const specialties = await request(app).get("/api/v1/specialties?limit=101").expect(400);

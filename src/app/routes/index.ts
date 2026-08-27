@@ -11,6 +11,7 @@ import { appointmentRouter } from "../module/appointment/appointment.routes.js";
 import { paymentRouter } from "../module/payment/payment.routes.js";
 import { prescriptionRouter } from "../module/prescription/prescription.routes.js";
 import { reviewRouter } from "../module/review/review.routes.js";
+import { supportRouter } from "../module/support/support.routes.js";
 
 export const apiRouter = Router();
 
@@ -25,3 +26,4 @@ apiRouter.use("/appointments", appointmentRouter);
 apiRouter.use("/payments", paymentRouter);
 apiRouter.use("/prescriptions", prescriptionRouter);
 apiRouter.use("/reviews", reviewRouter);
+apiRouter.use("/support", supportRouter);

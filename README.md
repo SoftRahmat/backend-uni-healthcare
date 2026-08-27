@@ -31,6 +31,7 @@ Implementation follows the phased roadmap in [IMPLEMENTATION_PLAN.md](docs/IMPLE
 | [Payment API](docs/PAYMENT_API.md)                                   | Stripe Checkout, webhooks, refunds, histories, and invoices         |
 | [Prescription API](docs/PRESCRIPTION_API.md)                         | Versioned prescriptions, medicines, PDFs, reminders, and analytics  |
 | [Review API](docs/REVIEW_API.md)                                     | Verified ratings, moderation, responses, discounts, and statistics  |
+| [Support API](docs/SUPPORT_API.md)                                   | Guest and authenticated support-ticket submission                   |
 
 ## Development
 

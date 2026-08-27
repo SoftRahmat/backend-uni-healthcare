@@ -1,0 +1,39 @@
+enum SupportTicketCategory {
+  ACCOUNT
+  APPOINTMENT
+  PAYMENT
+  PRESCRIPTION
+  PRIVACY
+  TECHNICAL
+  OTHER
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id String @id @default(uuid(7))
+
+  name     String                @db.VarChar(100)
+  email    String                @db.VarChar(320)
+  category SupportTicketCategory
+  subject  String                @db.VarChar(160)
+  message  String                @db.VarChar(5000)
+  locale   String                @default("en") @db.VarChar(5)
+  status   SupportTicketStatus   @default(OPEN)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email, createdAt(sort: Desc)], name: "idx_support_ticket_email_created")
+  @@index([status, createdAt(sort: Desc)], name: "idx_support_ticket_status_created")
+  @@index([userId, createdAt(sort: Desc)], name: "idx_support_ticket_user_created")
+  @@map("support_tickets")
+}

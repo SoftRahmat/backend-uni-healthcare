@@ -58,6 +58,13 @@ export const updateOwnDoctorProfile = asyncHandler(async (request, response) => 
   response.status(200).json(successResponse("Doctor profile updated successfully", doctor));
 });
 
+export const getOwnDoctorProfile = asyncHandler(async (request, response) => {
+  const actor = actorFrom(request);
+  if (!actor.profileId) throw new ApiError(404, "Doctor profile was not found", "DOCTOR_NOT_FOUND");
+  const doctor = await doctorService.getById(actor.profileId, actor);
+  response.status(200).json(successResponse("Doctor profile retrieved successfully", doctor));
+});
+
 export const listDoctors = asyncHandler(async (request, response) => {
   const result = await doctorService.list(
     doctorListQuerySchema.parse(request.query),

@@ -13,6 +13,7 @@ Both modules own their controller, service, routes, validation, and domain helpe
 Base path: `/api/v1/doctors`
 
 - `POST /` — `ADMIN` or `SUPER_ADMIN`; atomically creates User, Doctor, credential, password history, specialty assignments, and audit event. Sends doctor welcome instructions.
+- `GET /me` — `DOCTOR`; returns the authenticated doctor's complete own-profile view by session-linked profile ID, including profiles that are not publicly visible.
 - `PATCH /me` — `DOCTOR`; updates only the caller's profile and rejects email/status, registration, and rating changes.
 - `PATCH /:doctorId` — doctor ownership or admin override; admins may change email/status, while registration and rating fields remain immutable.
 - `GET /` — public, optionally authenticated; supports page/limit, specialty, gender, experience, fee, search, and sorting. Public callers only see active doctors; admins can also see blocked doctors.

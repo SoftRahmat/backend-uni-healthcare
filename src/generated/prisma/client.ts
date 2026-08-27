@@ -181,3 +181,8 @@ export type DoctorSchedule = Prisma.DoctorScheduleModel
  * 
  */
 export type Specialty = Prisma.SpecialtyModel
+/**
+ * Model SupportTicket
+ * 
+ */
+export type SupportTicket = Prisma.SupportTicketModel

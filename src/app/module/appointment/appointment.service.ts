@@ -206,7 +206,7 @@ export class AppointmentService {
     const videoCallingId = this.videos.createMeetingId();
 
     const result = await prisma.$transaction(async (transaction) => {
-      await transaction.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`patient:${input.patientId}`}))`;
+      await transaction.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`patient:${input.patientId}`}))`;
       const locked = await transaction.$queryRaw<
         Array<{ id: string }>
       >`SELECT "id" FROM "schedules" WHERE "id" = ${input.scheduleId} FOR UPDATE`;

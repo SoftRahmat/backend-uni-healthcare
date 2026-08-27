@@ -4,7 +4,7 @@ Base path: `/api/v1/auth`
 
 All responses use the project envelope. Successful responses contain `success`, `message`, and `data`; errors contain `success: false`, `message`, `error.code`, `statusCode`, and `requestId`.
 
-Protected endpoints require `Authorization: Bearer <access-token>`. Access tokens expire after seven days and are valid only while their referenced database session remains active.
+Protected endpoints accept the browser's `HttpOnly` authentication cookie or `Authorization: Bearer <access-token>` for non-browser clients. Access tokens expire after seven days and are valid only while their referenced database session remains active.
 
 ## Public endpoints
 
@@ -46,7 +46,7 @@ Returns a generic `200` response. For eligible pending accounts, the previous to
 { "email": "amina@example.com", "password": "Strong!Password1" }
 ```
 
-Returns the JWT access token, seven-day lifetime, and sanitized user/patient profile. Pending and blocked accounts return `403`; deleted accounts return `404`; invalid credentials return `401`. Five failures in 15 minutes trigger temporary throttling, and ten consecutive failures block the account pending an administrative unlock.
+Returns the JWT access token, seven-day lifetime, and sanitized user/patient profile. Browser clients also receive a seven-day `HttpOnly`, production-`Secure`, `SameSite=Strict` cookie. Pending and blocked accounts return `403`; deleted accounts return `404`; invalid credentials return `401`. Five failures in 15 minutes trigger temporary throttling, and ten consecutive failures block the account pending an administrative unlock.
 
 ### `POST /forgot-password`
 
@@ -69,6 +69,7 @@ Changes the credential, rejects the last three passwords, revokes every session,
 
 ## Protected endpoints
 
+- `GET /me` — restores the sanitized current user from the active browser or bearer session.
 - `POST /change-password` — body: `currentPassword`, `newPassword`, and optional `revokeOtherSessions` (defaults to `true`). The current session remains active.
 - `POST /logout` — idempotently terminates the current session.
 - `POST /logout-all` — terminates every session, including the caller's session.
@@ -82,6 +83,7 @@ Changes the credential, rejects the last three passwords, revokes every session,
 - The Better Auth Prisma schema and adapter are configured internally. Raw Better Auth routes are deliberately not mounted because product status, history, lockout, and audit rules must pass through the domain service.
 - Expired sessions/tokens and old login-attempt records are cleaned at startup and every 24 hours.
 - Authentication audit records never contain passwords, access tokens, session tokens, or raw email-action tokens.
+- Cookie-authenticated state changes require an allowed `Origin`; this complements `SameSite=Strict` protection against CSRF. Bearer clients are unaffected.
 
 ## Requirement coverage
 
